@@ -74,6 +74,9 @@ export default function AdminProductsPage() {
                   <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">
                     Stock
                   </th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -90,6 +93,14 @@ export default function AdminProductsPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {p.stock}
+                    </td>
+                    <td className="px-6 py-4">
+                      <Link
+                        href={`/admin/products/${p.id}`}
+                        className="text-primary-500 hover:text-primary-600 text-sm font-medium"
+                      >
+                        Edit
+                      </Link>
                     </td>
                   </tr>
                 ))}
