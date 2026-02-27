@@ -27,6 +27,8 @@ export default function EditProductPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [imagesInput, setImagesInput] = useState("");
+  const [isTrending, setIsTrending] = useState(false);
+  const [isHotDeal, setIsHotDeal] = useState(false);
   const [loadingProduct, setLoadingProduct] = useState(true);
   const router = useRouter();
   const params = useParams();
@@ -71,6 +73,8 @@ export default function EditProductPage() {
           sku: p.sku || "",
         });
         setImagesInput(Array.isArray(p.images) ? (p.images as string[]).join("\n") : "");
+        setIsTrending(!!(p as Product & { is_trending?: boolean }).is_trending);
+        setIsHotDeal(!!(p as Product & { is_hot_deal?: boolean }).is_hot_deal);
       } catch {
         toast.error("Product not found");
         router.push("/admin/products");
@@ -99,6 +103,8 @@ export default function EditProductPage() {
           stock: data.stock,
           sku: data.sku || null,
           images,
+          is_trending: isTrending,
+          is_hot_deal: isHotDeal,
         })
         .eq("id", id);
       if (error) throw error;
@@ -250,6 +256,17 @@ export default function EditProductPage() {
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
               placeholder="e.g. PERF-001"
             />
+          </div>
+
+          <div className="flex gap-6">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={isTrending} onChange={(e) => setIsTrending(e.target.checked)} className="rounded border-gray-300 text-primary-500" />
+              <span className="text-sm font-medium text-gray-700">Trending</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={isHotDeal} onChange={(e) => setIsHotDeal(e.target.checked)} className="rounded border-gray-300 text-primary-500" />
+              <span className="text-sm font-medium text-gray-700">Hot Deal</span>
+            </label>
           </div>
         </div>
 

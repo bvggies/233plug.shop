@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import Image from "next/image";
+import { User, Mail, Lock, ArrowRight } from "lucide-react";
 
 const schema = z
   .object({
@@ -34,9 +35,7 @@ export default function SignupPage() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
-  });
+  } = useForm<FormData>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
@@ -44,9 +43,7 @@ export default function SignupPage() {
       const { error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
-        options: {
-          data: { name: data.name },
-        },
+        options: { data: { name: data.name } },
       });
       if (error) throw error;
       toast.success("Account created! Check your email to verify.");
@@ -60,111 +57,120 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-500/10 via-white to-accent-500/10 p-4">
+    <div className="min-h-[100dvh] flex flex-col bg-gray-50">
+      <div className="h-40 bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 rounded-b-[2rem]" />
+
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        transition={{ duration: 0.4 }}
+        className="flex-1 -mt-24 px-4 pb-8"
       >
-        <div className="glass-card p-8">
-          <Link href="/" className="flex justify-center mb-8">
-            <Image
-              src="/233plug-logo.jpg"
-              alt="233Plug"
-              width={120}
-              height={40}
-              className="h-10 w-auto object-contain"
-            />
-          </Link>
-          <h1 className="text-2xl font-display font-bold text-center text-primary-500 mb-2">
-            Create account
-          </h1>
-          <p className="text-gray-500 text-center mb-8">
-            Join 233Plug to start shopping
-          </p>
-
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Full name
-              </label>
-              <input
-                {...register("name")}
-                type="text"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
-                placeholder="John Doe"
+        <div className="bg-white rounded-[2rem] shadow-xl shadow-black/5 border border-gray-100 overflow-hidden">
+          <div className="pt-8 pb-6 px-6 text-center">
+            <Link href="/" className="inline-block mb-4">
+              <Image
+                src="/233plug-logo.png"
+                alt="233Plug"
+                width={100}
+                height={36}
+                className="h-9 w-auto object-contain"
               />
+            </Link>
+            <h1 className="text-xl font-display font-bold text-gray-900">
+              Create account
+            </h1>
+            <p className="text-gray-500 text-sm mt-1">
+              Join 233Plug to start shopping
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="px-6 pb-8 space-y-4">
+            <div>
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  {...register("name")}
+                  type="text"
+                  placeholder="Full name"
+                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                />
+              </div>
               {errors.name && (
-                <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
+                <p className="mt-1.5 text-sm text-red-500 px-1">{errors.name.message}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
-              </label>
-              <input
-                {...register("email")}
-                type="email"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
-                placeholder="you@example.com"
-              />
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  {...register("email")}
+                  type="email"
+                  placeholder="Email"
+                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                />
+              </div>
               {errors.email && (
-                <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+                <p className="mt-1.5 text-sm text-red-500 px-1">{errors.email.message}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <input
-                {...register("password")}
-                type="password"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  {...register("password")}
+                  type="password"
+                  placeholder="Password (min 6 characters)"
+                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                />
+              </div>
               {errors.password && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.password.message}
-                </p>
+                <p className="mt-1.5 text-sm text-red-500 px-1">{errors.password.message}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm password
-              </label>
-              <input
-                {...register("confirmPassword")}
-                type="password"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  {...register("confirmPassword")}
+                  type="password"
+                  placeholder="Confirm password"
+                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
+                />
+              </div>
               {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.confirmPassword.message}
-                </p>
+                <p className="mt-1.5 text-sm text-red-500 px-1">{errors.confirmPassword.message}</p>
               )}
             </div>
 
-            <button
+            <motion.button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 bg-primary-500 text-white font-medium rounded-xl hover:bg-primary-600 transition disabled:opacity-50"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full py-4 px-4 bg-primary-500 text-white font-semibold rounded-2xl flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {loading ? "Creating account..." : "Create account"}
-            </button>
+              {loading ? (
+                <span className="inline-block w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  Create account
+                  <ArrowRight className="w-5 h-5" />
+                </>
+              )}
+            </motion.button>
           </form>
-
-          <p className="mt-6 text-center text-gray-600">
-            Already have an account?{" "}
-            <Link href="/login" className="text-primary-500 font-medium hover:underline">
-              Sign in
-            </Link>
-          </p>
         </div>
+
+        <p className="mt-6 text-center text-gray-500 text-sm">
+          Already have an account?{" "}
+          <Link href="/login" className="text-primary-500 font-semibold">
+            Sign in
+          </Link>
+        </p>
       </motion.div>
     </div>
   );

@@ -1,19 +1,40 @@
 "use client";
 
 import { Hero } from "@/components/hero/Hero";
-import { CategoryCard } from "@/components/home/CategoryCard";
-import { ProductCarousel } from "@/components/home/ProductCarousel";
-import { CountdownTimer } from "@/components/home/CountdownTimer";
+import { CategorySection } from "@/components/home/CategorySection";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import type { Category } from "@/types";
+import { Skeleton } from "@/components/ui/Skeleton";
 
-const categories = [
-  { name: "Perfumes", slug: "perfumes", image: "/categories/perfumes.jpg", color: "from-pink-400 to-rose-500" },
-  { name: "Sneakers", slug: "sneakers", image: "/categories/sneakers.jpg", color: "from-blue-400 to-indigo-500" },
-  { name: "Electronics", slug: "electronics", image: "/categories/electronics.jpg", color: "from-slate-400 to-slate-600" },
-  { name: "Accessories", slug: "accessories", image: "/categories/accessories.jpg", color: "from-amber-400 to-orange-500" },
+const LAYOUTS: Array<"featured-hero" | "bento" | "horizontal-scroll" | "alternating"> = [
+  "featured-hero",
+  "bento",
+  "horizontal-scroll",
+  "alternating",
 ];
 
 export default function HomePage() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from("categories")
+          .select("*")
+          .order("name");
+        setCategories((data as Category[]) ?? []);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
   return (
     <div>
       <Hero
@@ -25,56 +46,33 @@ export default function HomePage() {
         secondaryCtaHref="/request"
       />
 
-      <section className="max-w-7xl mx-auto px-4 mb-16">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-2xl font-display font-bold text-gray-900 mb-8"
-        >
-          Shop by Category
-        </motion.h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {categories.map((cat, i) => (
-            <motion.div
-              key={cat.slug}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-            >
-              <CategoryCard {...cat} />
-            </motion.div>
-          ))}
+      {loading ? (
+        <div className="max-w-7xl mx-auto px-4 py-16 space-y-16">
+          <Skeleton className="h-12 w-64" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[...Array(8)].map((_, i) => (
+              <Skeleton key={i} className="aspect-square rounded-2xl" />
+            ))}
+          </div>
         </div>
-      </section>
-
-      <section className="max-w-7xl mx-auto px-4 mb-16">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8"
-        >
-          <h2 className="text-2xl font-display font-bold text-gray-900">
-            Featured Products
-          </h2>
-          <CountdownTimer />
-        </motion.div>
-        <ProductCarousel />
-      </section>
-
-      <section className="max-w-7xl mx-auto px-4 mb-16">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-2xl font-display font-bold text-gray-900 mb-8"
-        >
-          Trending & Requested
-        </motion.h2>
-        <ProductCarousel />
-      </section>
+      ) : (
+        categories.map((cat, i) => (
+          <motion.div
+            key={cat.id}
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <CategorySection
+              name={cat.name}
+              slug={cat.slug}
+              layout={LAYOUTS[i % LAYOUTS.length]}
+              accent="bg-accent-500 text-white hover:bg-accent-600"
+            />
+          </motion.div>
+        ))
+      )}
     </div>
   );
 }

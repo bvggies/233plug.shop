@@ -13,7 +13,7 @@ const navItems = [
   { href: "/shop", icon: ShoppingBag, label: "Shop" },
   { href: "/request", icon: FileText, label: "Requests" },
   { href: "/cart", icon: ShoppingCart, label: "Cart", badge: true },
-  { href: "/dashboard", icon: User, label: "Account" },
+  { href: "/dashboard/profile", icon: User, label: "Profile" },
 ];
 
 export function GlassFABNav() {

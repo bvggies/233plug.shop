@@ -37,7 +37,7 @@ export default function DashboardOrdersPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       try {
-        const { data, error } = await supabase.from("orders").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+        const { data, error } = await supabase.from("orders").select("*, shipment_batches(*)").eq("user_id", user.id).order("created_at", { ascending: false });
         if (!error) setOrders((data as Order[]) || []);
       } finally {
         setLoading(false);
@@ -85,13 +85,24 @@ export default function DashboardOrdersPage() {
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order) => (
+                {orders.map((order) => {
+                  const batch = (order as Order & { shipment_batches?: { batch_name: string; status: string; tracking_number: string | null; estimated_delivery: string | null } | null } | null)?.shipment_batches ?? null;
+                  const progress = batch ? (batch.status === "delivered" ? 100 : batch.status === "shipped" ? 66 : batch.status === "pending" ? 33 : 33) : 0;
+                  return (
                   <tr
                     key={order.id}
                     className="border-b border-gray-100 last:border-0 hover:bg-gray-50/50"
                   >
-                    <td className="px-6 py-4 text-sm font-mono text-gray-900">
-                      {order.id.slice(0, 8)}...
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-mono text-gray-900">{order.id.slice(0, 8)}...</div>
+                      {batch && (
+                        <div className="mt-1">
+                          <div className="flex h-1.5 w-24 rounded-full bg-gray-200 overflow-hidden">
+                            <div className={cn("h-full rounded-full transition-all", progress >= 66 ? "bg-indigo-500" : "bg-amber-500")} style={{ width: `${progress}%` }} />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-0.5">{batch.batch_name} · {batch.status}</p>
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <StatusBadge status={order.status} />
@@ -103,7 +114,7 @@ export default function DashboardOrdersPage() {
                       {formatDate(order.created_at)}
                     </td>
                   </tr>
-                ))}
+                );})}
               </tbody>
             </table>
           </div>

@@ -21,7 +21,7 @@ export default function CheckoutSuccessPage() {
         Thank you for your order. We&apos;ll notify you when it ships.
       </p>
       <Link
-        href="/dashboard/orders"
+        href="/dashboard"
         className="inline-block px-6 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600"
       >
         View orders

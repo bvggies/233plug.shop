@@ -29,6 +29,39 @@ export type WalletTransactionType =
   | "cashback"
   | "refund";
 
+export interface SitePage {
+  id: string;
+  slug: string;
+  title: string;
+  content: string | null;
+  meta_description: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  contact_address: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FAQ {
+  id: string;
+  question: string;
+  answer: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface HeroSlide {
+  id: string;
+  image_url: string;
+  title: string | null;
+  subtitle: string | null;
+  link_url: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Profile {
   id: string;
   name: string | null;
@@ -76,6 +109,8 @@ export interface Product {
   sku: string | null;
   created_at: string;
   updated_at: string;
+  is_trending?: boolean;
+  is_hot_deal?: boolean;
   category?: Category;
   variants?: ProductVariant[];
 }

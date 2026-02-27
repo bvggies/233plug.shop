@@ -11,9 +11,10 @@ import { toast } from "sonner";
 
 interface ProductCardProps {
   product: Product;
+  compact?: boolean;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, compact }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem);
   const image = product.images?.[0];
 
@@ -32,7 +33,9 @@ export function ProductCard({ product }: ProductCardProps) {
     <Link href={`/shop/${product.id}`}>
       <motion.div
         whileHover={{ y: -4 }}
-        className="group rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-soft hover:shadow-soft-lg transition-shadow"
+        className={`group rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-soft hover:shadow-soft-lg transition-shadow ${
+          compact ? "rounded-xl" : ""
+        }`}
       >
         <div className="relative aspect-square overflow-hidden bg-gray-100">
           {image ? (
@@ -49,8 +52,18 @@ export function ProductCard({ product }: ProductCardProps) {
               <span className="text-4xl font-display">233</span>
             </div>
           )}
-          {product.stock < 5 && product.stock > 0 && (
-            <span className="absolute top-2 left-2 px-2 py-1 bg-amber-500 text-white text-xs font-medium rounded-lg">
+          {product.is_hot_deal && (
+            <span className="absolute top-2 left-2 px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-lg">
+              Hot Deal
+            </span>
+          )}
+          {product.is_trending && !product.is_hot_deal && (
+            <span className="absolute top-2 left-2 px-2 py-1 bg-primary-500 text-white text-xs font-medium rounded-lg">
+              Trending
+            </span>
+          )}
+          {product.stock < 5 && product.stock > 0 && !product.is_hot_deal && (
+            <span className="absolute top-2 right-2 px-2 py-1 bg-amber-500 text-white text-xs font-medium rounded-lg">
               Low stock
             </span>
           )}
@@ -60,11 +73,11 @@ export function ProductCard({ product }: ProductCardProps) {
             </span>
           )}
         </div>
-        <div className="p-4">
-          <h3 className="font-medium text-gray-900 line-clamp-2 mb-1">
+        <div className={compact ? "p-3" : "p-4"}>
+          <h3 className={`font-medium text-gray-900 line-clamp-2 mb-1 ${compact ? "text-sm" : ""}`}>
             {product.name}
           </h3>
-          <p className="text-primary-600 font-semibold mb-3">
+          <p className={`text-primary-600 font-semibold ${compact ? "mb-2 text-sm" : "mb-3"}`}>
             {formatPrice(product.price, product.currency)}
           </p>
           <motion.button
@@ -72,9 +85,11 @@ export function ProductCard({ product }: ProductCardProps) {
             disabled={product.stock === 0}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="w-full flex items-center justify-center gap-2 py-2 px-4 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`w-full flex items-center justify-center gap-2 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition disabled:opacity-50 disabled:cursor-not-allowed ${
+              compact ? "py-1.5 px-3 text-sm" : "py-2 px-4"
+            }`}
           >
-            <ShoppingCart className="w-4 h-4" />
+            <ShoppingCart className={compact ? "w-3.5 h-3.5" : "w-4 h-4"} />
             Add to cart
           </motion.button>
         </div>

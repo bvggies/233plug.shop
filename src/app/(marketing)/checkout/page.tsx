@@ -4,11 +4,22 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { CreditCard, Wallet } from "lucide-react";
+import { CreditCard, Wallet, Tag, X } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
 import { formatPrice } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+
+type CouponResult = {
+  id: string;
+  code: string;
+  discount_type: string;
+  value: number;
+  min_order: number;
+  expiry: string | null;
+  usage_limit: number | null;
+  used_count: number;
+};
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -17,6 +28,10 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<{ id: string } | null>(null);
   const [walletBalance, setWalletBalance] = useState(0);
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<CouponResult | null>(null);
+  const [couponError, setCouponError] = useState("");
+  const [applying, setApplying] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -33,8 +48,60 @@ export default function CheckoutPage() {
       .then(({ data }) => setWalletBalance(data?.wallet_balance ?? 0));
   }, [user, supabase]);
 
-  const total = totalPrice();
+  const subtotal = totalPrice();
+  const discountAmount = appliedCoupon
+    ? appliedCoupon.discount_type === "percent"
+      ? (subtotal * appliedCoupon.value) / 100
+      : Math.min(appliedCoupon.value, subtotal)
+    : 0;
+  const total = Math.max(0, subtotal - discountAmount);
   const canUseWallet = walletBalance >= total;
+
+  const applyCoupon = async () => {
+    const code = couponCode.trim().toUpperCase();
+    if (!code) {
+      setCouponError("Enter a coupon code");
+      return;
+    }
+    setApplying(true);
+    setCouponError("");
+    try {
+      const { data, error } = await supabase
+        .from("coupons")
+        .select("id, code, discount_type, value, min_order, expiry, usage_limit, used_count")
+        .ilike("code", code)
+        .single();
+      if (error || !data) {
+        setCouponError("Invalid or expired coupon");
+        return;
+      }
+      const c = data as CouponResult;
+      if (c.expiry && new Date(c.expiry) < new Date()) {
+        setCouponError("Coupon has expired");
+        return;
+      }
+      if (c.usage_limit != null && c.used_count >= c.usage_limit) {
+        setCouponError("Coupon usage limit reached");
+        return;
+      }
+      if (subtotal < c.min_order) {
+        setCouponError(`Minimum order of ${formatPrice(c.min_order, "GHS")} required`);
+        return;
+      }
+      setAppliedCoupon(c);
+      toast.success("Coupon applied!");
+    } catch {
+      setCouponError("Could not apply coupon");
+    } finally {
+      setApplying(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponError("");
+  };
 
   const handleCheckout = async () => {
     if (items.length === 0) {
@@ -57,6 +124,8 @@ export default function CheckoutPage() {
           status: "pending",
           total_price: total,
           currency: "GHS",
+          coupon_id: appliedCoupon?.id || null,
+          discount_amount: discountAmount || 0,
         })
         .select("id")
         .single();
@@ -76,6 +145,9 @@ export default function CheckoutPage() {
       if (paymentMethod === "wallet" && canUseWallet) {
         const newBalance = walletBalance - total;
         await supabase.from("profiles").update({ wallet_balance: newBalance }).eq("id", u.id);
+        if (appliedCoupon) {
+          await supabase.from("coupons").update({ used_count: (appliedCoupon.used_count ?? 0) + 1 }).eq("id", appliedCoupon.id);
+        }
         await supabase.from("wallet_transactions").insert({
           user_id: u.id,
           amount: -total,
@@ -106,7 +178,7 @@ export default function CheckoutPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: u.email,
-            amount: total * 100,
+            amount: Math.round(total * 100),
             orderId: order.id,
           }),
         });
@@ -121,6 +193,7 @@ export default function CheckoutPage() {
             orderId: order.id,
             amount: total,
             items,
+            discountAmount: discountAmount,
           }),
         });
         const { url } = await res.json();
@@ -205,12 +278,40 @@ export default function CheckoutPage() {
           className="p-6 bg-white rounded-2xl border border-gray-100 shadow-soft h-fit"
         >
           <h3 className="font-semibold text-lg mb-4">Order total</h3>
+          {!appliedCoupon ? (
+            <div className="flex gap-2 mb-4">
+              <div className="relative flex-1">
+                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  value={couponCode}
+                  onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError(""); }}
+                  placeholder="Coupon code"
+                  className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm"
+                />
+              </div>
+              <button onClick={applyCoupon} disabled={applying} className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 disabled:opacity-50">
+                {applying ? "..." : "Apply"}
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between mb-4 px-3 py-2 bg-primary-50 rounded-xl">
+              <span className="text-sm font-medium text-primary-700">{appliedCoupon.code} applied</span>
+              <button onClick={removeCoupon} className="p-1 rounded hover:bg-primary-100"><X className="w-4 h-4" /></button>
+            </div>
+          )}
+          {couponError && <p className="text-sm text-red-500 mb-2">{couponError}</p>}
           <div className="space-y-2 mb-6">
             <div className="flex justify-between text-gray-600">
-              <span>Items</span>
-              <span>{items.length}</span>
+              <span>Subtotal</span>
+              <span>{formatPrice(subtotal, "GHS")}</span>
             </div>
-            <div className="flex justify-between font-semibold text-xl">
+            {discountAmount > 0 && (
+              <div className="flex justify-between text-green-600">
+                <span>Discount</span>
+                <span>-{formatPrice(discountAmount, "GHS")}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-semibold text-xl pt-2 border-t border-gray-100">
               <span>Total</span>
               <span className="text-primary-600">{formatPrice(total, "GHS")}</span>
             </div>

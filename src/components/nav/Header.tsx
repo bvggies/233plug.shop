@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ShoppingCart, User, Search } from "lucide-react";
+import { Menu, X, ShoppingCart, User, Search, Sparkles } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect } from "react";
@@ -26,7 +26,6 @@ export function Header() {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/shop", label: "Shop" },
-    { href: "/request", label: "Request" },
     { href: "/cart", label: "Cart" },
   ];
 
@@ -36,7 +35,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2">
             <Image
-              src="/233plug-logo.jpg"
+              src="/233plug-logo.png"
               alt="233Plug"
               width={100}
               height={36}
@@ -44,7 +43,7 @@ export function Header() {
             />
           </Link>
 
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -54,6 +53,16 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
+            <Link href="/request" className="hidden md:block ml-2">
+              <motion.span
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold rounded-xl shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 transition-shadow"
+                whileHover={{ scale: 1.05, y: -1 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Sparkles className="w-4 h-4" />
+                Request Item
+              </motion.span>
+            </Link>
           </nav>
 
           <div className="flex items-center gap-4">
@@ -119,6 +128,15 @@ export function Header() {
                   className="py-2 text-gray-700 hover:text-primary-500 font-medium"
                 >
                   {user ? "Dashboard" : "Sign In"}
+                </Link>
+                <Link href="/request" onClick={() => setOpen(false)} className="mt-2">
+                  <motion.span
+                    className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold rounded-xl"
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Request Item
+                  </motion.span>
                 </Link>
               </div>
             </motion.nav>
