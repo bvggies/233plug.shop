@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   Facebook,
@@ -14,6 +13,7 @@ import {
   ArrowUp,
   Sparkles,
 } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 import { toast } from "sonner";
 
 const categories = [
@@ -114,9 +114,9 @@ export function Footer() {
   return (
     <footer className="relative mt-24 overflow-hidden">
       {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-gray-50 via-gray-900 to-gray-950" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(212,168,75,0.08),transparent)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_100%,rgba(11,61,46,0.15),transparent)]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-neutral-50 via-neutral-900 to-neutral-950 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(245,158,11,0.06),transparent)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_100%,rgba(5,150,105,0.12),transparent)]" />
 
       {/* Feature strip */}
       <motion.div
@@ -134,7 +134,7 @@ export function Footer() {
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
               whileHover={{ y: -4 }}
-              className="flex items-center gap-4 p-4 rounded-2xl bg-white/95 backdrop-blur border border-gray-100 shadow-soft"
+              className="flex items-center gap-4 p-4 rounded-2xl surface-card hover:shadow-card-hover transition-shadow"
             >
               <div className="p-2.5 rounded-xl bg-primary-500/10 text-primary-600">
                 <f.icon className="w-5 h-5" />
@@ -161,15 +161,9 @@ export function Footer() {
             <Link href="/" className="inline-block mb-6">
               <motion.div
                 whileHover={{ scale: 1.02 }}
-                className="inline-flex p-3 rounded-xl bg-primary-500/10 ring-2 ring-primary-400/20 shadow-[0_0_24px_rgba(212,168,75,0.2),0_0_48px_rgba(212,168,75,0.1)]"
+                className="inline-flex p-3 rounded-xl bg-white/10 ring-2 ring-white/20"
               >
-                <Image
-                  src="/233plug-logo.png"
-                  alt="233Plug"
-                  width={120}
-                  height={40}
-                  className="h-10 w-auto object-contain brightness-0 invert drop-shadow-[0_0_8px_rgba(212,168,75,0.3)]"
-                />
+                <Logo variant="dark" size="lg" asLink={false} />
               </motion.div>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed mb-6 max-w-sm">

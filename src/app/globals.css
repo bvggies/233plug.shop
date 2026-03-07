@@ -4,18 +4,22 @@
 
 @layer base {
   :root {
-    --color-primary: #0B3D2E;
-    --color-primary-light: #1a8d73;
-    --color-accent: #D4A84B;
-    --color-accent-light: #E7B34F;
+    --color-primary: #059669;
+    --color-primary-dark: #065f46;
+    --color-accent: #f59e0b;
+    --color-accent-light: #fbbf24;
     --radius-sm: 0.5rem;
     --radius-md: 0.75rem;
     --radius-lg: 1rem;
     --radius-xl: 1.25rem;
     --radius-2xl: 1.5rem;
     --radius-3xl: 2rem;
-    --shadow-soft: 0 2px 15px -3px rgba(0, 0, 0, 0.07);
-    --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+    --shadow-soft: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+    --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+    --shadow-card-hover: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+    --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+    --tracking-tight: -0.02em;
+    --tracking-display: -0.03em;
   }
 
   html {
@@ -23,17 +27,51 @@
   }
 
   body {
-    @apply antialiased bg-gray-50 text-gray-900;
+    @apply antialiased bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Typography hierarchy */
+  h1, .text-display {
+    @apply font-display font-bold tracking-tight;
+    letter-spacing: var(--tracking-display);
+  }
+  h2, h3 {
+    @apply font-display font-semibold tracking-tight;
   }
 }
 
 @layer components {
   .glass {
-    @apply bg-white/70 dark:bg-gray-900/70 backdrop-blur-lg;
+    @apply bg-white/90 backdrop-blur-xl border border-neutral-200/80 dark:bg-neutral-900/90 dark:border-neutral-700/80;
   }
 
   .glass-card {
-    @apply glass rounded-2xl shadow-glass border border-white/20;
+    @apply bg-white/95 backdrop-blur-xl rounded-2xl border border-neutral-200/80 shadow-[var(--shadow-glass)] dark:bg-neutral-800/95 dark:border-neutral-600/80;
+  }
+
+  /* Surface cards - consistent elevation */
+  .surface-card {
+    @apply bg-white rounded-2xl border border-neutral-200/80 shadow-[var(--shadow-card)] dark:bg-neutral-800 dark:border-neutral-600/80 dark:shadow-none;
+  }
+  .surface-card-hover {
+    @apply surface-card transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] hover:border-neutral-300 dark:hover:border-neutral-500;
+  }
+
+  /* Primary button - one source of truth */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 font-semibold text-white rounded-xl bg-primary-500 hover:bg-primary-600 active:bg-primary-700 transition-colors shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none dark:bg-primary-500 dark:hover:bg-primary-400 dark:focus:ring-offset-neutral-900;
+  }
+  .btn-accent {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 font-semibold text-white rounded-xl bg-accent-500 hover:bg-accent-600 active:bg-accent-700 transition-colors shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none dark:bg-accent-500 dark:hover:bg-accent-400 dark:focus:ring-offset-neutral-900;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 font-medium text-neutral-700 rounded-xl bg-white border border-neutral-200 hover:bg-neutral-50 hover:border-neutral-300 transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-200 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-600 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:hover:border-neutral-500 dark:focus:ring-neutral-600;
+  }
+
+  /* Input base */
+  .input-base {
+    @apply w-full rounded-xl border border-neutral-200 bg-neutral-50/80 px-4 py-3 text-neutral-900 placeholder-neutral-400 transition-colors focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none dark:bg-neutral-800/80 dark:border-neutral-600 dark:text-neutral-100 dark:placeholder-neutral-500 dark:focus:bg-neutral-800 dark:focus:border-primary-400;
   }
 
   .scrollbar-hide {

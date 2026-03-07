@@ -10,7 +10,7 @@ import {
   FileText,
   DollarSign,
   Package,
-  Image,
+  Image as ImageIcon,
   Mail,
   Plus,
   ArrowRight,
@@ -155,7 +155,7 @@ export default function AdminOverviewPage() {
       label: "Hero Slides",
       value: stats?.heroSlides ?? 0,
       href: "/admin/hero",
-      icon: Image,
+      icon: ImageIcon,
       color: "from-purple-500 to-purple-600",
       bgLight: "bg-purple-50",
       iconColor: "text-purple-600",
@@ -182,14 +182,16 @@ export default function AdminOverviewPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {statCards.map((card) => (
+        {statCards.map((card) => {
+          const Icon = card.icon;
+          return (
           <Link
             key={card.label}
             href={card.href}
             className="group bg-white rounded-2xl p-5 shadow-soft border border-gray-100 hover:shadow-soft-lg hover:border-gray-200 transition-all"
           >
             <div className={`w-10 h-10 rounded-xl ${card.bgLight} ${card.iconColor} flex items-center justify-center mb-3`}>
-              <card.icon className="w-5 h-5" />
+              <Icon className="w-5 h-5" />
             </div>
             <p className="text-2xl font-display font-bold text-gray-900">{card.value}</p>
             <p className="text-sm text-gray-500 mt-1">{card.label}</p>
@@ -197,7 +199,8 @@ export default function AdminOverviewPage() {
               View <ArrowRight className="w-3.5 h-3.5" />
             </span>
           </Link>
-        ))}
+          );
+        })}
       </div>
 
       {/* Quick actions */}
@@ -215,7 +218,7 @@ export default function AdminOverviewPage() {
             href="/admin/hero"
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition"
           >
-            <Image className="w-4 h-4" />
+            <ImageIcon className="w-4 h-4" aria-hidden />
             Edit hero
           </Link>
           <Link

@@ -54,7 +54,10 @@ export default function AdminRequestsPage() {
       });
   };
 
-  useEffect(() => { load(); }, [supabase]);
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional single run on mount
+  }, []);
 
   const sendQuote = async (isUpdate = false) => {
     if (!selected || !quotePrice || isNaN(parseFloat(quotePrice))) {

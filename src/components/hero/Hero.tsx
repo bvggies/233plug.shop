@@ -72,7 +72,7 @@ export function Hero({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className="relative min-h-[60vh] flex items-center justify-center overflow-hidden rounded-3xl mx-4 mb-8"
+      className="relative min-h-[58vh] flex items-center justify-center overflow-hidden rounded-2xl mx-4 mb-10 shadow-xl"
     >
       {/* Background images - stacked for transitions */}
       <div className="absolute inset-0">
@@ -87,7 +87,7 @@ export function Hero({
               className="absolute inset-0"
               style={{
                 backgroundImage: bgImage
-                  ? `linear-gradient(135deg, rgba(11,61,46,0.85) 0%, rgba(11,61,46,0.75) 100%), url(${bgImage})`
+                  ? `linear-gradient(135deg, rgba(11,61,46,0.88) 0%, rgba(11,61,46,0.78) 100%), url(${bgImage})`
                   : undefined,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
@@ -99,7 +99,7 @@ export function Hero({
             className="absolute inset-0 bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700"
             style={{
               backgroundImage: backgroundImage
-                ? `linear-gradient(135deg, rgba(11,61,46,0.9) 0%, rgba(11,61,46,0.7) 100%), url(${backgroundImage})`
+                ? `linear-gradient(135deg, rgba(11,61,46,0.92) 0%, rgba(11,61,46,0.75) 100%), url(${backgroundImage})`
                 : undefined,
               backgroundSize: "cover",
             }}
@@ -107,41 +107,39 @@ export function Hero({
         )}
       </div>
 
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-500/80 via-primary-600/70 to-primary-700/80 pointer-events-none" />
+      {/* Single gradient overlay when no image */}
+      {!bgImage && (
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-500/90 via-primary-600/85 to-primary-700/90 pointer-events-none" />
+      )}
 
-      <div className="relative z-10 text-center px-6 py-16 max-w-3xl mx-auto">
+      <div className="relative z-10 text-center px-6 py-14 max-w-3xl mx-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide?.id ?? "static"}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.5 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.4 }}
           >
-            <motion.h1
-              className="text-4xl md:text-6xl font-display font-bold text-white mb-4"
-            >
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-4 tracking-tight">
               {displayTitle}
-            </motion.h1>
-            <motion.p
-              className="text-lg md:text-xl text-white/90 mb-8"
-            >
+            </h1>
+            <p className="text-base md:text-lg text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">
               {displaySubtitle}
-            </motion.p>
+            </p>
           </motion.div>
         </AnimatePresence>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center"
+          transition={{ delay: 0.3, duration: 0.4 }}
+          className="flex flex-col sm:flex-row gap-3 justify-center"
         >
           <Link href={primaryLink}>
             <motion.span
-              className="inline-block px-8 py-3 bg-accent-500 text-white font-medium rounded-xl hover:bg-accent-600 transition"
-              whileHover={{ scale: 1.05 }}
+              className="btn-accent inline-block"
+              whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
             >
               {ctaText}
@@ -149,8 +147,8 @@ export function Hero({
           </Link>
           <Link href={secondaryCtaHref}>
             <motion.span
-              className="inline-block px-8 py-3 bg-white/20 backdrop-blur-sm text-white font-medium rounded-xl border border-white/30 hover:bg-white/30 transition"
-              whileHover={{ scale: 1.05 }}
+              className="btn-secondary inline-block border-white/30 bg-white/15 text-white hover:bg-white/25 hover:border-white/40"
+              whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
             >
               {secondaryCtaText}
@@ -161,16 +159,16 @@ export function Hero({
 
       {/* Dot indicators */}
       {hasSlides && slides.length > 1 && (
-        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-2 z-10">
           {slides.map((_, i) => (
             <button
               key={i}
               onClick={() => setActiveIndex(i)}
               aria-label={`Go to slide ${i + 1}`}
-              className={`h-2 rounded-full transition-all ${
+              className={`h-1.5 rounded-full transition-all duration-200 ${
                 i === activeIndex
                   ? "w-6 bg-white"
-                  : "w-2 bg-white/50 hover:bg-white/70"
+                  : "w-1.5 bg-white/50 hover:bg-white/70"
               }`}
             />
           ))}
@@ -180,15 +178,15 @@ export function Hero({
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        className="absolute bottom-6 left-1/2 -translate-x-1/2"
+        transition={{ delay: 0.6 }}
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 hidden sm:block"
       >
         <motion.div
-          animate={{ y: [0, 8, 0] }}
+          animate={{ y: [0, 6, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
-          className="w-6 h-10 rounded-full border-2 border-white/50 flex items-start justify-center p-2"
+          className="w-6 h-9 rounded-full border-2 border-white/40 flex items-start justify-center pt-2"
         >
-          <div className="w-1 h-2 bg-white/80 rounded-full" />
+          <div className="w-1 h-1.5 bg-white/70 rounded-full" />
         </motion.div>
       </motion.div>
     </motion.section>

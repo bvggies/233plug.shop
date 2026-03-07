@@ -57,15 +57,15 @@ export default function DashboardOrdersPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-display font-bold text-gray-900 mb-6">
+      <h1 className="text-2xl font-display font-bold text-gray-900 tracking-tight mb-6">
         Orders
       </h1>
       {orders.length === 0 ? (
-        <div className="bg-white rounded-2xl p-12 text-center text-gray-500 shadow-soft border border-gray-100">
+        <div className="surface-card p-12 text-center text-gray-500">
           No orders yet.
         </div>
       ) : (
-        <div className="bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden">
+        <div className="surface-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>

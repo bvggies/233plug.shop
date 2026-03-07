@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Mail, ArrowLeft } from "lucide-react";
 
@@ -19,6 +19,10 @@ export default function ForgotPasswordPage() {
       toast.error("Enter your email");
       return;
     }
+    if (!isSupabaseConfigured()) {
+      toast.error("Authentication is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in Vercel.");
+      return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
@@ -28,7 +32,12 @@ export default function ForgotPasswordPage() {
       setSent(true);
       toast.success("Check your email for the reset link");
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to send reset email");
+      const msg = err instanceof Error ? err.message : "Failed to send reset email";
+      if (typeof msg === "string" && msg.toLowerCase().includes("fetch")) {
+        toast.error("Cannot reach authentication server. Check your connection and that Supabase env vars are set in Vercel.");
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }

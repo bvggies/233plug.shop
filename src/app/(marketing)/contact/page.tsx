@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Mail, Phone, MapPin, Send } from "lucide-react";
+import { Mail, Phone, MapPin, Send, MessageSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -53,8 +53,8 @@ export default function ContactPage() {
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16">
-        <Skeleton className="h-12 w-48 mb-8" />
-        <Skeleton className="h-64" />
+        <Skeleton className="h-12 w-48 mb-8 rounded-xl" />
+        <Skeleton className="h-64 rounded-2xl" />
       </div>
     );
   }
@@ -62,31 +62,40 @@ export default function ContactPage() {
   const contactEmail = page?.contact_email;
   const contactPhone = page?.contact_phone;
   const contactAddress = page?.contact_address;
+  const title = page?.title ?? "Contact Us";
+  const subtitle = page?.meta_description ?? "Get in touch with our team. We're here to help.";
 
   return (
     <div className="min-h-screen">
-      <div className="bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 py-20 px-4">
+      {/* Hero */}
+      <section className="mx-4 md:mx-6 mb-10">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-4xl mx-auto text-center"
+          transition={{ duration: 0.4 }}
+          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 py-16 md:py-20 px-6 shadow-lg"
         >
-          <h1 className="text-4xl md:text-5xl font-display font-bold text-white mb-4">
-            {page?.title ?? "Contact Us"}
-          </h1>
-          <p className="text-white/80 text-lg max-w-2xl mx-auto">
-            {page?.content ?? "Get in touch with our team."}
-          </p>
+          <div className="relative z-10 max-w-4xl mx-auto text-center">
+            <div className="inline-flex p-3 bg-white/10 rounded-2xl mb-4">
+              <MessageSquare className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight mb-4">
+              {title}
+            </h1>
+            <p className="text-white/90 text-lg max-w-2xl mx-auto leading-relaxed">
+              {subtitle}
+            </p>
+          </div>
         </motion.div>
-      </div>
+      </section>
 
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="max-w-5xl mx-auto px-4 py-16 -mt-8"
+        transition={{ delay: 0.15, duration: 0.4 }}
+        className="max-w-5xl mx-auto px-4 pb-20 -mt-2"
       >
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-6 md:gap-8">
           {/* Contact info cards */}
           {(contactEmail || contactPhone || contactAddress) && (
             <div className="md:col-span-1 space-y-4">
@@ -94,14 +103,14 @@ export default function ContactPage() {
                 <motion.a
                   href={`mailto:${contactEmail}`}
                   whileHover={{ y: -4 }}
-                  className="flex gap-4 p-4 rounded-2xl bg-white border border-gray-100 shadow-soft hover:shadow-soft-lg transition"
+                  className="flex gap-4 p-5 surface-card-hover group"
                 >
-                  <div className="p-2 bg-primary-50 rounded-xl">
-                    <Mail className="w-5 h-5 text-primary-600" />
+                  <div className="flex-shrink-0 p-2.5 rounded-xl bg-primary-500/10 dark:bg-primary-500/20 text-primary-600 dark:text-primary-400">
+                    <Mail className="w-5 h-5" />
                   </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">Email</p>
-                    <p className="text-gray-600 text-sm">{contactEmail}</p>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">Email</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mt-0.5 break-all">{contactEmail}</p>
                   </div>
                 </motion.a>
               )}
@@ -109,28 +118,28 @@ export default function ContactPage() {
                 <motion.a
                   href={`tel:${contactPhone}`}
                   whileHover={{ y: -4 }}
-                  className="flex gap-4 p-4 rounded-2xl bg-white border border-gray-100 shadow-soft hover:shadow-soft-lg transition"
+                  className="flex gap-4 p-5 surface-card-hover group"
                 >
-                  <div className="p-2 bg-primary-50 rounded-xl">
-                    <Phone className="w-5 h-5 text-primary-600" />
+                  <div className="flex-shrink-0 p-2.5 rounded-xl bg-primary-500/10 dark:bg-primary-500/20 text-primary-600 dark:text-primary-400">
+                    <Phone className="w-5 h-5" />
                   </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">Phone</p>
-                    <p className="text-gray-600 text-sm">{contactPhone}</p>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">Phone</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mt-0.5">{contactPhone}</p>
                   </div>
                 </motion.a>
               )}
               {contactAddress && (
                 <motion.div
                   whileHover={{ y: -4 }}
-                  className="flex gap-4 p-4 rounded-2xl bg-white border border-gray-100 shadow-soft"
+                  className="flex gap-4 p-5 surface-card"
                 >
-                  <div className="p-2 bg-primary-50 rounded-xl">
-                    <MapPin className="w-5 h-5 text-primary-600" />
+                  <div className="flex-shrink-0 p-2.5 rounded-xl bg-primary-500/10 dark:bg-primary-500/20 text-primary-600 dark:text-primary-400">
+                    <MapPin className="w-5 h-5" />
                   </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">Address</p>
-                    <p className="text-gray-600 text-sm">{contactAddress}</p>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">Address</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm mt-0.5">{contactAddress}</p>
                   </div>
                 </motion.div>
               )}
@@ -140,43 +149,45 @@ export default function ContactPage() {
           {/* Form */}
           <motion.form
             onSubmit={handleSubmit}
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 12 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className={`${contactEmail || contactPhone || contactAddress ? "md:col-span-2" : "md:col-span-3"} p-8 rounded-2xl bg-white border border-gray-100 shadow-soft`}
+            transition={{ delay: 0.2, duration: 0.4 }}
+            className={`${contactEmail || contactPhone || contactAddress ? "md:col-span-2" : "md:col-span-3"} surface-card p-8`}
           >
-            <h3 className="text-xl font-display font-bold text-gray-900 mb-6">
+            <h2 className="text-xl font-display font-bold text-gray-900 dark:text-gray-100 mb-6">
               Send a message
-            </h3>
-            <div className="space-y-4">
-              <div className="grid sm:grid-cols-2 gap-4">
+            </h2>
+            <div className="space-y-5">
+              <div className="grid sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Name *
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     required
                     value={form.name}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="input-base"
+                    placeholder="Your name"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email *
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Email <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
                     required
                     value={form.email}
                     onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="input-base"
+                    placeholder="you@example.com"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Subject
                 </label>
                 <input
@@ -184,35 +195,34 @@ export default function ContactPage() {
                   value={form.subject}
                   onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
                   placeholder="How can we help?"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="input-base"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Message *
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Message <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   required
                   rows={5}
                   value={form.message}
                   onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+                  placeholder="Tell us what you need..."
+                  className="input-base resize-none"
                 />
               </div>
             </div>
-            <motion.button
+            <button
               type="submit"
               disabled={submitting}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="mt-6 flex items-center gap-2 px-6 py-3 bg-primary-500 text-white font-medium rounded-xl hover:bg-primary-600 disabled:opacity-50"
+              className="btn-primary mt-6 w-full sm:w-auto"
             >
               <Send className="w-4 h-4" />
               {submitting ? "Sending..." : "Send message"}
-            </motion.button>
+            </button>
           </motion.form>
         </div>
-      </motion.div>
+      </motion.section>
     </div>
   );
 }

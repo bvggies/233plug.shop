@@ -32,12 +32,11 @@ export function ProductCard({ product, compact }: ProductCardProps) {
   return (
     <Link href={`/shop/${product.id}`}>
       <motion.div
-        whileHover={{ y: -4 }}
-        className={`group rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-soft hover:shadow-soft-lg transition-shadow ${
-          compact ? "rounded-xl" : ""
-        }`}
+        whileHover={{ y: -6 }}
+        transition={{ duration: 0.2 }}
+        className={`group surface-card-hover overflow-hidden ${compact ? "rounded-xl" : ""}`}
       >
-        <div className="relative aspect-square overflow-hidden bg-gray-100">
+        <div className="relative aspect-square overflow-hidden bg-gray-100/80">
           {image ? (
             <Image
               src={image}
@@ -48,46 +47,42 @@ export function ProductCard({ product, compact }: ProductCardProps) {
               unoptimized={image.startsWith("http")}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400">
-              <span className="text-4xl font-display">233</span>
+            <div className="w-full h-full flex items-center justify-center text-gray-300">
+              <span className="text-4xl font-display font-medium">233</span>
             </div>
           )}
           {product.is_hot_deal && (
-            <span className="absolute top-2 left-2 px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-lg">
+            <span className="absolute top-2 left-2 px-2.5 py-1 bg-red-500 text-white text-[11px] font-semibold rounded-lg uppercase tracking-wide">
               Hot Deal
             </span>
           )}
           {product.is_trending && !product.is_hot_deal && (
-            <span className="absolute top-2 left-2 px-2 py-1 bg-primary-500 text-white text-xs font-medium rounded-lg">
+            <span className="absolute top-2 left-2 px-2.5 py-1 bg-primary-600 text-white text-[11px] font-medium rounded-lg">
               Trending
             </span>
           )}
           {product.stock < 5 && product.stock > 0 && !product.is_hot_deal && (
-            <span className="absolute top-2 right-2 px-2 py-1 bg-amber-500 text-white text-xs font-medium rounded-lg">
+            <span className="absolute top-2 right-2 px-2.5 py-1 bg-amber-500 text-white text-[11px] font-medium rounded-lg">
               Low stock
             </span>
           )}
           {product.stock === 0 && (
-            <span className="absolute top-2 left-2 px-2 py-1 bg-gray-800 text-white text-xs font-medium rounded-lg">
+            <span className="absolute top-2 left-2 px-2.5 py-1 bg-gray-800 text-white text-[11px] font-medium rounded-lg">
               Out of stock
             </span>
           )}
         </div>
         <div className={compact ? "p-3" : "p-4"}>
-          <h3 className={`font-medium text-gray-900 line-clamp-2 mb-1 ${compact ? "text-sm" : ""}`}>
+          <h3 className={`font-semibold text-gray-900 line-clamp-2 mb-1.5 ${compact ? "text-sm" : "text-base"}`}>
             {product.name}
           </h3>
-          <p className={`text-primary-600 font-semibold ${compact ? "mb-2 text-sm" : "mb-3"}`}>
+          <p className={`text-primary-600 font-bold ${compact ? "mb-2 text-sm" : "mb-3"}`}>
             {formatPrice(product.price, product.currency)}
           </p>
           <motion.button
             onClick={handleAddToCart}
             disabled={product.stock === 0}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className={`w-full flex items-center justify-center gap-2 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition disabled:opacity-50 disabled:cursor-not-allowed ${
-              compact ? "py-1.5 px-3 text-sm" : "py-2 px-4"
-            }`}
+            className={`btn-primary w-full ${compact ? "py-2 text-sm" : "py-2.5"}`}
           >
             <ShoppingCart className={compact ? "w-3.5 h-3.5" : "w-4 h-4"} />
             Add to cart

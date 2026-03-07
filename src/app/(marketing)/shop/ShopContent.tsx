@@ -98,6 +98,8 @@ export function ShopContent() {
     maxPrice != null ||
     inStockOnly;
 
+  const categoryKey = selectedCategories.join(",");
+
   useEffect(() => {
     const supabase = createClient();
     const fetchCategories = async () => {
@@ -149,14 +151,9 @@ export function ShopContent() {
       setLoading(false);
     };
     fetchProducts();
-  }, [
-    selectedCategories.join(","),
-    searchQuery,
-    minPrice,
-    maxPrice,
-    inStockOnly,
-    sortParam,
-  ]);
+    // categoryKey is derived from selectedCategories; listing selectedCategories would cause unnecessary runs (array ref)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryKey, searchQuery, minPrice, maxPrice, inStockOnly, sortParam]);
 
   const Sidebar = () => (
     <aside className="w-full lg:w-72 flex-shrink-0">
@@ -171,7 +168,7 @@ export function ShopContent() {
               placeholder="Search products..."
               value={localSearch}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2.5 input-base text-sm"
             />
           </div>
         </div>
@@ -284,7 +281,7 @@ export function ShopContent() {
   return (
     <div className="min-h-screen">
       {/* Hero header */}
-      <div className="bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 rounded-3xl mx-4 md:mx-6 mb-8 md:mb-12 px-6 py-12 md:py-16">
+      <div className="bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 rounded-2xl mx-4 md:mx-6 mb-8 md:mb-12 px-6 py-12 md:py-16 shadow-lg">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -310,7 +307,7 @@ export function ShopContent() {
           <div className="lg:hidden">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 font-medium"
+              className="btn-secondary flex items-center gap-2"
             >
               <SlidersHorizontal className="w-4 h-4" />
               Filters {hasActiveFilters && `(${selectedCategories.length + (inStockOnly ? 1 : 0) + (searchQuery ? 1 : 0)})`}
@@ -321,7 +318,7 @@ export function ShopContent() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="mt-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-soft overflow-hidden"
+                  className="mt-4 p-4 surface-card overflow-hidden"
                 >
                   <Sidebar />
                 </motion.div>
@@ -331,7 +328,7 @@ export function ShopContent() {
 
           {/* Desktop sidebar */}
           <div className="hidden lg:block">
-            <div className="p-5 rounded-2xl bg-white border border-gray-100 shadow-soft">
+            <div className="p-5 surface-card">
               <Sidebar />
             </div>
           </div>
@@ -387,7 +384,7 @@ export function ShopContent() {
                 <p className="text-gray-500 text-lg mb-4">No products match your filters.</p>
                 <button
                   onClick={clearFilters}
-                  className="inline-block px-6 py-3 bg-primary-500 text-white font-medium rounded-xl hover:bg-primary-600 transition"
+                  className="btn-primary"
                 >
                   Clear filters
                 </button>

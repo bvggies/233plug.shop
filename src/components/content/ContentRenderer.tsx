@@ -30,7 +30,7 @@ export function ContentRenderer({ content }: { content: string }) {
   const flushList = () => {
     if (listItems.length > 0) {
       elements.push(
-        <ul key={key++} className="list-disc list-inside space-y-2 my-4 text-gray-600">
+        <ul key={key++} className="list-disc list-inside space-y-2 my-4 text-gray-600 dark:text-gray-300">
           {listItems.map((item, i) => (
             <li key={i}>{parseLine(item.replace(/^-\s*/, ""))}</li>
           ))}
@@ -49,14 +49,14 @@ export function ContentRenderer({ content }: { content: string }) {
     if (trimmed.startsWith("## ")) {
       flushList();
       elements.push(
-        <h2 key={key++} className="text-xl font-display font-bold text-gray-900 mt-8 mb-3 first:mt-0">
+        <h2 key={key++} className="text-xl font-display font-bold text-gray-900 dark:text-gray-100 mt-8 mb-3 first:mt-0">
           {trimmed.slice(3)}
         </h2>
       );
     } else if (trimmed.startsWith("### ")) {
       flushList();
       elements.push(
-        <h3 key={key++} className="text-lg font-semibold text-gray-900 mt-6 mb-2">
+        <h3 key={key++} className="text-lg font-semibold text-gray-900 dark:text-gray-100 mt-6 mb-2">
           {trimmed.slice(4)}
         </h3>
       );
@@ -65,7 +65,7 @@ export function ContentRenderer({ content }: { content: string }) {
     } else {
       flushList();
       elements.push(
-        <p key={key++} className="text-gray-600 leading-relaxed mb-3">
+        <p key={key++} className="text-gray-600 dark:text-gray-300 leading-relaxed mb-3">
           {parseLine(trimmed)}
         </p>
       );

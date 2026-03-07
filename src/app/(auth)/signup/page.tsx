@@ -7,9 +7,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { toast } from "sonner";
-import Image from "next/image";
+import { Logo } from "@/components/ui/Logo";
 import { User, Mail, Lock, ArrowRight } from "lucide-react";
 
 const schema = z
@@ -38,6 +38,10 @@ export default function SignupPage() {
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: FormData) => {
+    if (!isSupabaseConfigured()) {
+      toast.error("Authentication is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in Vercel.");
+      return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase.auth.signUp({
@@ -50,7 +54,12 @@ export default function SignupPage() {
       router.push("/login");
       router.refresh();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Signup failed");
+      const msg = err instanceof Error ? err.message : "Signup failed";
+      if (typeof msg === "string" && msg.toLowerCase().includes("fetch")) {
+        toast.error("Cannot reach authentication server. Check your connection and that Supabase env vars are set in Vercel.");
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -69,13 +78,7 @@ export default function SignupPage() {
         <div className="bg-white rounded-[2rem] shadow-xl shadow-black/5 border border-gray-100 overflow-hidden">
           <div className="pt-8 pb-6 px-6 text-center">
             <Link href="/" className="inline-block mb-4">
-              <Image
-                src="/233plug-logo.png"
-                alt="233Plug"
-                width={100}
-                height={36}
-                className="h-9 w-auto object-contain"
-              />
+              <Logo size="lg" className="justify-center" />
             </Link>
             <h1 className="text-xl font-display font-bold text-gray-900">
               Create account

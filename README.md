@@ -42,8 +42,11 @@ Run in Supabase SQL Editor (in order):
 
 1. Push to GitHub
 2. Import project in Vercel
-3. Add environment variables
-4. Deploy
+3. Add environment variables (required for auth and data):
+   - `NEXT_PUBLIC_SUPABASE_URL` – your Supabase project URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` – your Supabase anon key
+   - Add Paystack/Stripe keys if using payments
+4. Deploy. If login shows "Failed to fetch", ensure these Supabase vars are set in Vercel (Project → Settings → Environment Variables) and redeploy.
 
 ## Features
 

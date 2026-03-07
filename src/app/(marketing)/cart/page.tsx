@@ -26,7 +26,7 @@ export default function CartPage() {
         </p>
         <Link
           href="/shop"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-primary-500 text-white font-medium rounded-xl hover:bg-primary-600 transition"
+          className="btn-primary"
         >
           Continue shopping
         </Link>
@@ -38,7 +38,7 @@ export default function CartPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-display font-bold text-gray-900 mb-8">
+      <h1 className="text-3xl font-display font-bold text-gray-900 tracking-tight mb-8">
         Your Cart
       </h1>
 
@@ -58,7 +58,7 @@ export default function CartPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="flex gap-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-soft"
+                className="flex gap-4 p-4 surface-card"
               >
                 <div className="relative w-24 h-24 md:w-28 md:h-28 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100">
                   {image ? (
@@ -148,7 +148,7 @@ export default function CartPage() {
           transition={{ delay: 0.1 }}
           className="lg:col-span-1"
         >
-          <div className="sticky top-24 p-6 bg-white rounded-2xl border border-gray-100 shadow-soft">
+          <div className="sticky top-24 p-6 surface-card">
             <h3 className="font-semibold text-lg text-gray-900 mb-4">
               Order summary
             </h3>
@@ -164,7 +164,7 @@ export default function CartPage() {
             </div>
             <button
               onClick={() => router.push("/checkout")}
-              className="w-full py-4 px-6 bg-primary-500 text-white font-semibold rounded-xl hover:bg-primary-600 transition"
+              className="btn-primary w-full py-4"
             >
               Proceed to checkout
             </button>

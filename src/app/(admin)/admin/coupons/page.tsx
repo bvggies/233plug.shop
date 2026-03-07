@@ -42,7 +42,10 @@ export default function AdminCouponsPage() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, [supabase]);
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load depends on supabase (stable), intentional single run on mount
+  }, []);
 
   const openCreate = () => {
     setModal("create");

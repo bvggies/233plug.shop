@@ -3,6 +3,8 @@ import { Space_Grotesk, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { themeInitScript } from "@/components/theme/theme-script";
+import { ThemeProviderWrapper } from "@/components/theme/ThemeProviderWrapper";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -32,11 +34,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable}`}>
+    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable}`} suppressHydrationWarning>
       <body className="font-sans min-h-screen">
-        {children}
-        <Toaster position="top-center" richColors />
-        <Analytics />
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript() }} />
+        <ThemeProviderWrapper>
+          {children}
+          <Toaster position="top-center" richColors />
+          <Analytics />
+        </ThemeProviderWrapper>
       </body>
     </html>
   );

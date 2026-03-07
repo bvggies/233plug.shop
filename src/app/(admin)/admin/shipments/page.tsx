@@ -61,7 +61,10 @@ export default function AdminShipmentsPage() {
     });
   };
 
-  useEffect(() => { load(); }, [supabase]);
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional single run on mount
+  }, []);
 
   const openCreate = () => {
     setModal("create");

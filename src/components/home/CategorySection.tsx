@@ -51,7 +51,7 @@ function ProductTile({
     <Link href={`/shop/${product.id}`} className="block h-full">
       <motion.div
         whileHover={{ y: -6 }}
-        className="group h-full rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-soft hover:shadow-soft-lg transition-all duration-300"
+        className="group h-full surface-card-hover overflow-hidden"
       >
         <div
           className={`relative overflow-hidden bg-gray-100 ${
@@ -75,9 +75,7 @@ function ProductTile({
           {showAddToCart && product.stock > 0 && (
             <motion.button
               onClick={handleAddToCart}
-              initial={{ opacity: 0 }}
-              whileHover={{ opacity: 1 }}
-              className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-xl text-sm font-medium opacity-90 hover:opacity-100 transition"
+              className="btn-primary absolute bottom-3 left-1/2 -translate-x-1/2 opacity-95 hover:opacity-100"
             >
               <ShoppingCart className="w-4 h-4" />
               Add to cart
@@ -258,7 +256,7 @@ export function CategorySection({ name, slug, layout, accent }: CategorySectionP
               <Link href={`/shop/${p.id}`} className="block h-full">
                 <motion.div
                   whileHover={{ y: -6 }}
-                  className="group h-full rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-soft hover:shadow-soft-lg transition-all"
+                  className="group h-full surface-card-hover overflow-hidden"
                 >
                   <div className={`relative overflow-hidden bg-gray-100 ${i === 0 ? "aspect-[4/5]" : "aspect-square"}`}>
                     {p.images?.[0] ? (

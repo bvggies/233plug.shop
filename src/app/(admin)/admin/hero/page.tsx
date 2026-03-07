@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -14,11 +15,7 @@ export default function AdminHeroPage() {
   const [adding, setAdding] = useState(false);
   const supabase = createClient();
 
-  useEffect(() => {
-    loadSlides();
-  }, []);
-
-  async function loadSlides() {
+  const loadSlides = useCallback(async () => {
     try {
       const { data } = await supabase
         .from("hero_slides")
@@ -28,7 +25,11 @@ export default function AdminHeroPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [supabase]);
+
+  useEffect(() => {
+    loadSlides();
+  }, [loadSlides]);
 
   async function handleDelete(id: string) {
     if (!confirm("Delete this slide?")) return;
@@ -134,11 +135,18 @@ export default function AdminHeroPage() {
             className="bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden flex flex-col md:flex-row"
           >
             <div className="md:w-64 h-40 md:h-auto md:min-h-[140px] flex-shrink-0 relative bg-gray-100">
-              <img
-                src={slide.image_url}
-                alt={slide.title ?? "Slide"}
-                className="w-full h-full object-cover"
-              />
+              {slide.image_url ? (
+                <Image
+                  src={slide.image_url}
+                  alt={slide.title ?? "Slide"}
+                  fill
+                  className="object-cover"
+                  sizes="256px"
+                  unoptimized={slide.image_url.startsWith("http")}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">No image</div>
+              )}
             </div>
             <div className="flex-1 p-4 flex flex-col justify-between">
               <div>

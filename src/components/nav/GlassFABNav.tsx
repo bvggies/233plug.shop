@@ -46,7 +46,7 @@ export function GlassFABNav() {
           !visible && "translate-y-24 opacity-0 pointer-events-none"
         )}
       >
-        <div className="glass-card flex items-center justify-around py-3 px-4">
+        <div className="glass-card flex items-center justify-around py-3 px-2 max-w-md mx-auto">
           {navItems.map((item) => {
             const isActive =
               pathname === item.href ||
@@ -60,11 +60,11 @@ export function GlassFABNav() {
                 className="relative flex flex-col items-center gap-1 min-w-[56px]"
               >
                 <motion.span
-                  whileHover={{ scale: 1.1 }}
+                  whileHover={{ scale: 1.08 }}
                   whileTap={{ scale: 0.95 }}
                   className={cn(
-                    "p-2 rounded-xl transition-colors",
-                    isActive ? "bg-primary-500/20 text-primary-500" : "text-gray-500 hover:text-primary-500"
+                    "flex items-center justify-center p-2.5 rounded-xl transition-colors min-w-[44px]",
+                    isActive ? "bg-primary-500/12 text-primary-600 dark:bg-primary-500/20 dark:text-primary-400" : "text-gray-500 hover:text-primary-600 hover:bg-gray-100/80 dark:text-gray-400 dark:hover:text-primary-400 dark:hover:bg-gray-700/80"
                   )}
                 >
                   {item.badge && totalItems > 0 ? (
@@ -80,8 +80,8 @@ export function GlassFABNav() {
                 </motion.span>
                 <span
                   className={cn(
-                    "text-xs",
-                    isActive ? "text-primary-500 font-medium" : "text-gray-500"
+                    "text-[11px] font-medium",
+                    isActive ? "text-primary-600 dark:text-primary-400" : "text-gray-500 dark:text-gray-400"
                   )}
                 >
                   {item.label}

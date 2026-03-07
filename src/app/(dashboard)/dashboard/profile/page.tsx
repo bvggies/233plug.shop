@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
@@ -184,12 +185,15 @@ export default function DashboardProfilePage() {
         <div className="bg-white rounded-[1.75rem] shadow-xl shadow-black/5 border border-gray-100 overflow-hidden">
           <div className="pt-6 pb-4 px-6 flex items-center gap-4">
             <div className="relative">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-200 to-primary-300 flex items-center justify-center overflow-hidden">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-200 to-primary-300 flex items-center justify-center overflow-hidden relative">
                 {profile.avatar_url ? (
-                  <img
+                  <Image
                     src={profile.avatar_url}
-                    alt=""
-                    className="w-full h-full object-cover"
+                    alt="Profile avatar"
+                    fill
+                    className="object-cover"
+                    sizes="80px"
+                    unoptimized={profile.avatar_url.startsWith("http")}
                   />
                 ) : (
                   <span className="text-2xl font-display font-bold text-primary-600">
