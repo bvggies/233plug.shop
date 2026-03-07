@@ -2,6 +2,7 @@
 
 import { Hero } from "@/components/hero/Hero";
 import { CategorySection } from "@/components/home/CategorySection";
+import { ProductCarousel } from "@/components/home/ProductCarousel";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -39,17 +40,22 @@ export default function HomePage() {
     <div>
       <Hero
         title="Shop Premium Products"
-        subtitle="Perfumes, sneakers, electronics & accessories. Request-to-buy sourcing from Ghana."
+        subtitle="Perfumes, sneakers, electronics & accessories sourced globally."
         ctaText="Shop Now"
         ctaHref="/shop"
         secondaryCtaText="Request an Item"
         secondaryCtaHref="/request"
       />
 
+      {/* Product discovery: Trending, Hot Deals, New Arrivals */}
+      <ProductCarousel title="Trending Products" viewAllHref="/shop?sort=newest" query="trending" limit={10} />
+      <ProductCarousel title="Hot Deals" viewAllHref="/shop" query="hot_deal" limit={10} />
+      <ProductCarousel title="New Arrivals" viewAllHref="/shop" query="new" limit={10} />
+
       {loading ? (
-        <div className="max-w-7xl mx-auto px-4 py-16 space-y-16">
-          <Skeleton className="h-12 w-64" />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 space-y-16">
+          <Skeleton className="h-10 w-64 rounded-xl" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
             {[...Array(8)].map((_, i) => (
               <Skeleton key={i} className="aspect-square rounded-2xl" />
             ))}

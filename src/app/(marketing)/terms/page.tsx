@@ -37,8 +37,8 @@ export default function TermsPage() {
   if (!page) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 text-center">
-        <p className="text-gray-500">Page not found.</p>
-        <Link href="/" className="text-primary-500 hover:underline mt-4 inline-block">
+        <p className="text-neutral-600 dark:text-neutral-400 mb-6">Page not found.</p>
+        <Link href="/" className="text-primary-500 dark:text-primary-400 hover:underline mt-4 inline-block">
           Go home
         </Link>
       </div>
@@ -65,15 +65,15 @@ export default function TermsPage() {
         transition={{ delay: 0.2 }}
         className="max-w-3xl mx-auto px-4 py-16 -mt-8"
       >
-        <div className="bg-white rounded-2xl shadow-soft border border-gray-100 p-8 md:p-12">
+        <div className="bg-white dark:bg-neutral-800 rounded-2xl shadow-soft border border-gray-100 dark:border-neutral-600 p-8 md:p-12">
           {page.content ? (
             <ContentRenderer content={page.content} />
           ) : (
-            <p className="text-gray-500">No content yet.</p>
+            <p className="text-neutral-500 dark:text-neutral-400">No content yet.</p>
           )}
         </div>
         <div className="mt-8">
-          <Link href="/" className="text-primary-500 hover:underline">
+          <Link href="/" className="text-primary-500 dark:text-primary-400 hover:underline">
             ← Back to home
           </Link>
         </div>

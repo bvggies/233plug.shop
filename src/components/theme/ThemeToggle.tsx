@@ -11,7 +11,7 @@ const options: { value: Theme; label: string; icon: typeof Sun }[] = [
   { value: "dark", label: "Dark", icon: Moon },
 ];
 
-export function ThemeToggle({ className }: { className?: string }) {
+export function ThemeToggle({ className, placement = "down" }: { className?: string; placement?: "up" | "down" }) {
   const { theme, setTheme, effectiveTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -42,7 +42,10 @@ export function ThemeToggle({ className }: { className?: string }) {
 
       {open && (
         <div
-          className="absolute right-0 top-full mt-1 py-1 min-w-[140px] rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg z-50"
+          className={cn(
+            "absolute py-1 min-w-[140px] rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg z-[100]",
+            placement === "up" ? "bottom-full mb-1 right-0 left-auto" : "top-full mt-1 right-0 left-auto"
+          )}
           role="menu"
         >
           {options.map((opt) => {

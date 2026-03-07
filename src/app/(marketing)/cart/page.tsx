@@ -14,19 +14,19 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 text-gray-400 mb-6">
-          <ShoppingCart className="w-10 h-10" />
+      <div className="max-w-2xl mx-auto px-4 py-16 lg:py-20 text-center">
+        <div className="inline-flex items-center justify-center w-20 h-20 lg:w-24 lg:h-24 rounded-full bg-neutral-100 dark:bg-neutral-800/80 text-neutral-500 dark:text-neutral-400 mb-6 lg:mb-8">
+          <ShoppingCart className="w-10 h-10 lg:w-12 lg:h-12" />
         </div>
-        <h2 className="text-2xl font-display font-bold text-gray-900 mb-2">
+        <h2 className="section-title text-2xl lg:text-3xl text-neutral-900 dark:text-neutral-100 mb-2">
           Your cart is empty
         </h2>
-        <p className="text-gray-500 mb-6">
+        <p className="text-description mb-6 lg:mb-8">
           Add items from the shop to get started.
         </p>
         <Link
           href="/shop"
-          className="btn-primary"
+          className="btn-primary px-6 py-3 lg:px-8 lg:py-3.5 rounded-xl"
         >
           Continue shopping
         </Link>
@@ -37,12 +37,12 @@ export default function CartPage() {
   const total = totalPrice();
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-display font-bold text-gray-900 tracking-tight mb-8">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+      <h1 className="section-title text-2xl lg:text-3xl text-neutral-900 dark:text-neutral-100 tracking-tight mb-6 lg:mb-10">
         Your Cart
       </h1>
 
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -58,9 +58,9 @@ export default function CartPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="flex gap-4 p-4 surface-card"
+                className="flex gap-4 p-4 lg:p-5 rounded-2xl lg:rounded-3xl surface-card surface-card-hover"
               >
-                <div className="relative w-24 h-24 md:w-28 md:h-28 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100">
+                <div className="relative w-24 h-24 md:w-28 md:h-28 flex-shrink-0 rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800/80">
                   {image ? (
                     <Image
                       src={image}
@@ -71,7 +71,7 @@ export default function CartPage() {
                       unoptimized={image.startsWith("http")}
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 text-2xl font-display">
+                    <div className="w-full h-full flex items-center justify-center text-neutral-500 dark:text-neutral-400 text-2xl font-display">
                       233
                     </div>
                   )}
@@ -80,16 +80,16 @@ export default function CartPage() {
                 <div className="flex-1 min-w-0">
                   <Link
                     href={product ? `/shop/${product.id}` : "/shop"}
-                    className="font-medium text-gray-900 hover:text-primary-600 line-clamp-2"
+                    className="font-medium text-neutral-900 dark:text-neutral-100 hover:text-primary-600 dark:hover:text-primary-400 line-clamp-2 transition-colors"
                   >
                     {product?.name ?? "Product"}
                   </Link>
-                  <p className="text-primary-600 font-semibold mt-1">
+                  <p className="text-primary-600 dark:text-primary-400 font-semibold mt-1">
                     {formatPrice(item.price, product?.currency ?? "GHS")}
                   </p>
 
                   <div className="flex items-center gap-4 mt-3">
-                    <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+                    <div className="flex items-center border border-neutral-200 dark:border-[var(--surface-border)] rounded-xl overflow-hidden">
                       <button
                         onClick={() =>
                           updateQuantity(
@@ -98,12 +98,12 @@ export default function CartPage() {
                             item.variant_id
                           )
                         }
-                        className="p-2 text-gray-600 hover:bg-gray-50 transition"
+                        className="p-2.5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-white/5 transition"
                         aria-label="Decrease"
                       >
                         <Minus className="w-4 h-4" />
                       </button>
-                      <span className="w-8 text-center text-sm font-medium">
+                      <span className="w-8 text-center text-sm font-medium text-neutral-900 dark:text-neutral-100">
                         {item.quantity}
                       </span>
                       <button
@@ -114,7 +114,7 @@ export default function CartPage() {
                             item.variant_id
                           )
                         }
-                        className="p-2 text-gray-600 hover:bg-gray-50 transition"
+                        className="p-2.5 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-white/5 transition"
                         aria-label="Increase"
                       >
                         <Plus className="w-4 h-4" />
@@ -124,7 +124,7 @@ export default function CartPage() {
                       onClick={() =>
                         removeItem(item.product_id, item.variant_id)
                       }
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition"
+                      className="p-2.5 text-red-500 hover:bg-red-500/10 dark:hover:bg-red-500/20 rounded-xl transition"
                       aria-label="Remove"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -133,7 +133,7 @@ export default function CartPage() {
                 </div>
 
                 <div className="text-right">
-                  <p className="font-semibold text-gray-900">
+                  <p className="font-semibold text-neutral-900 dark:text-neutral-100">
                     {formatPrice(item.price * item.quantity, product?.currency ?? "GHS")}
                   </p>
                 </div>
@@ -148,29 +148,31 @@ export default function CartPage() {
           transition={{ delay: 0.1 }}
           className="lg:col-span-1"
         >
-          <div className="sticky top-24 p-6 surface-card">
-            <h3 className="font-semibold text-lg text-gray-900 mb-4">
+          <div className="sticky top-24 lg:top-28 p-5 lg:p-6 rounded-2xl lg:rounded-3xl surface-card">
+            <h3 className="section-title text-lg lg:text-xl text-neutral-900 dark:text-neutral-100 mb-4 lg:mb-5">
               Order summary
             </h3>
             <div className="space-y-2 mb-6">
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between text-description text-sm lg:text-base">
                 <span>Items ({items.length})</span>
                 <span>{formatPrice(total, "GHS")}</span>
               </div>
-              <div className="flex justify-between font-semibold text-xl pt-4 border-t border-gray-100">
-                <span>Total</span>
-                <span className="text-primary-600">{formatPrice(total, "GHS")}</span>
+              <div className="flex justify-between font-semibold text-lg lg:text-xl pt-4 border-t border-neutral-200 dark:border-[var(--surface-border)]">
+                <span className="text-neutral-900 dark:text-neutral-100">Total</span>
+                <span className="text-primary-600 dark:text-primary-400">{formatPrice(total, "GHS")}</span>
               </div>
             </div>
-            <button
+            <motion.button
               onClick={() => router.push("/checkout")}
-              className="btn-primary w-full py-4"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="btn-primary w-full py-3.5 lg:py-4 rounded-xl"
             >
               Proceed to checkout
-            </button>
+            </motion.button>
             <Link
               href="/shop"
-              className="block mt-4 text-center text-gray-500 hover:text-primary-600 text-sm font-medium"
+              className="block mt-4 text-center text-description hover:text-primary-600 dark:hover:text-primary-400 text-sm font-medium transition-colors"
             >
               Continue shopping
             </Link>

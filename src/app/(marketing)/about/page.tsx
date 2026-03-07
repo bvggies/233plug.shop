@@ -44,7 +44,7 @@ const FALLBACK_CONTENT = (
           </div>
           <div>
             <p className="font-semibold text-gray-900 dark:text-gray-100">{title}</p>
-            <p className="text-sm mt-0.5">{text}</p>
+            <p className="text-sm mt-0.5 text-gray-600 dark:text-gray-300">{text}</p>
           </div>
         </li>
       ))}

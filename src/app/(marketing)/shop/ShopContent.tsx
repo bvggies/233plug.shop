@@ -160,9 +160,9 @@ export function ShopContent() {
       <div className="lg:sticky lg:top-24 space-y-6">
         {/* Search */}
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-2">Search</label>
+          <label className="block text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-2">Search</label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 dark:text-neutral-400" />
             <input
               type="text"
               placeholder="Search products..."
@@ -175,7 +175,7 @@ export function ShopContent() {
 
         {/* Categories */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">Categories</h3>
+          <h3 className="section-title text-sm mb-3 text-neutral-900 dark:text-neutral-100">Categories</h3>
           <div className="space-y-2">
             <label
               className="flex items-center gap-3 cursor-pointer group"
@@ -185,12 +185,12 @@ export function ShopContent() {
                 className={`w-5 h-5 rounded border-2 flex items-center justify-center transition ${
                   selectedCategories.length === 0
                     ? "bg-primary-500 border-primary-500"
-                    : "border-gray-300 group-hover:border-gray-400"
+                    : "border-neutral-300 dark:border-neutral-600 group-hover:border-neutral-400 dark:group-hover:border-neutral-500"
                 }`}
               >
                 {selectedCategories.length === 0 && <Check className="w-3 h-3 text-white" />}
               </div>
-              <span className="text-sm text-gray-700 group-hover:text-gray-900">All categories</span>
+              <span className="text-sm text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-neutral-100">All categories</span>
             </label>
             {categories.map((c) => {
               const checked = selectedCategories.includes(c.slug);
@@ -201,7 +201,7 @@ export function ShopContent() {
                 >
                   <div
                     className={`w-5 h-5 rounded border-2 flex items-center justify-center transition ${
-                      checked ? "bg-primary-500 border-primary-500" : "border-gray-300 group-hover:border-gray-400"
+                      checked ? "bg-primary-500 border-primary-500" : "border-neutral-300 dark:border-neutral-600 group-hover:border-neutral-400 dark:group-hover:border-neutral-500"
                     }`}
                     onClick={(e) => {
                       e.preventDefault();
@@ -216,7 +216,7 @@ export function ShopContent() {
                     onChange={() => toggleCategory(c.slug)}
                     className="sr-only"
                   />
-                  <span className="text-sm text-gray-700 group-hover:text-gray-900">{c.name}</span>
+                  <span className="text-sm text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-neutral-100">{c.name}</span>
                 </label>
               );
             })}
@@ -235,7 +235,7 @@ export function ShopContent() {
           <label className="flex items-center gap-3 cursor-pointer group">
             <div
               className={`w-5 h-5 rounded border-2 flex items-center justify-center transition ${
-                inStockOnly ? "bg-primary-500 border-primary-500" : "border-gray-300 group-hover:border-gray-400"
+                inStockOnly ? "bg-primary-500 border-primary-500" : "border-neutral-300 dark:border-neutral-600 group-hover:border-neutral-400 dark:group-hover:border-neutral-500"
               }`}
             >
               {inStockOnly && <Check className="w-3 h-3 text-white" />}
@@ -246,17 +246,17 @@ export function ShopContent() {
               onChange={toggleInStock}
               className="sr-only"
             />
-            <span className="text-sm text-gray-700 group-hover:text-gray-900">In stock only</span>
+            <span className="text-sm text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-neutral-100">In stock only</span>
           </label>
         </div>
 
         {/* Sort */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">Sort by</h3>
+          <h3 className="section-title text-sm mb-3 text-neutral-900 dark:text-neutral-100">Sort by</h3>
           <select
             value={sortParam}
             onChange={(e) => setSort(e.target.value as SortOption)}
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-primary-500"
+            className="w-full px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-[var(--surface-border)] bg-white dark:bg-[var(--surface-card)] text-neutral-900 dark:text-neutral-100 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition"
           >
             <option value="newest">Newest first</option>
             <option value="price_asc">Price: Low to High</option>
@@ -268,7 +268,7 @@ export function ShopContent() {
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition"
+            className="flex items-center gap-2 w-full px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition"
           >
             <X className="w-4 h-4" />
             Clear all filters
@@ -281,19 +281,19 @@ export function ShopContent() {
   return (
     <div className="min-h-screen">
       {/* Hero header */}
-      <div className="bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 rounded-2xl mx-4 md:mx-6 mb-8 md:mb-12 px-6 py-12 md:py-16 shadow-lg">
+      <div className="bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 rounded-2xl lg:rounded-3xl mx-4 md:mx-6 lg:mx-auto lg:max-w-7xl mb-8 md:mb-12 px-6 py-12 md:py-16 lg:px-10 lg:py-20 shadow-lg">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="max-w-7xl mx-auto"
+          className="max-w-4xl"
         >
-          <h1 className="text-3xl md:text-5xl font-display font-bold text-white tracking-tight mb-2">
+          <h1 className="hero-title text-3xl md:text-4xl lg:text-5xl text-white tracking-tight mb-2">
             {selectedCategories.length === 1
               ? categories.find((c) => c.slug === selectedCategories[0])?.name ?? "Shop"
               : "Shop"}
           </h1>
-          <p className="text-white/80 text-lg max-w-xl">
+          <p className="text-white/90 text-base lg:text-lg max-w-xl">
             {selectedCategories.length === 1
               ? `Browse our curated selection of ${categories.find((c) => c.slug === selectedCategories[0])?.name?.toLowerCase() ?? ""}.`
               : "Explore perfumes, sneakers, electronics, accessories and more. Request items we don't stock."}
@@ -301,13 +301,13 @@ export function ShopContent() {
         </motion.div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 pb-16">
-        <div className="flex flex-col lg:flex-row gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 lg:pb-20">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-10">
           {/* Mobile filter toggle */}
           <div className="lg:hidden">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="btn-secondary flex items-center gap-2"
+              className="btn-secondary flex items-center gap-2 rounded-xl"
             >
               <SlidersHorizontal className="w-4 h-4" />
               Filters {hasActiveFilters && `(${selectedCategories.length + (inStockOnly ? 1 : 0) + (searchQuery ? 1 : 0)})`}
@@ -318,7 +318,7 @@ export function ShopContent() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="mt-4 p-4 surface-card overflow-hidden"
+                  className="mt-4 p-4 rounded-2xl surface-card overflow-hidden"
                 >
                   <Sidebar />
                 </motion.div>
@@ -328,7 +328,7 @@ export function ShopContent() {
 
           {/* Desktop sidebar */}
           <div className="hidden lg:block">
-            <div className="p-5 surface-card">
+            <div className="p-5 lg:p-6 rounded-2xl lg:rounded-3xl surface-card">
               <Sidebar />
             </div>
           </div>
@@ -341,20 +341,20 @@ export function ShopContent() {
               animate={{ opacity: 1 }}
               className="flex items-center justify-between mb-6"
             >
-              <p className="text-gray-500 text-sm">
+              <p className="text-description text-sm lg:text-base">
                 {loading ? "Loading..." : `${products.length} product${products.length !== 1 ? "s" : ""}`}
               </p>
-              <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-xl">
+              <div className="flex items-center gap-1 p-1 rounded-xl bg-neutral-100 dark:bg-white/5 border border-neutral-200/80 dark:border-[var(--surface-border)]">
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-2 rounded-lg transition ${viewMode === "grid" ? "bg-white shadow-sm text-primary-600" : "text-gray-500 hover:text-gray-700"}`}
+                  className={`p-2 rounded-lg transition ${viewMode === "grid" ? "bg-white dark:bg-white/10 shadow-sm text-primary-600 dark:text-primary-400" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"}`}
                   aria-label="Grid view"
                 >
                   <LayoutGrid className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode("compact")}
-                  className={`p-2 rounded-lg transition ${viewMode === "compact" ? "bg-white shadow-sm text-primary-600" : "text-gray-500 hover:text-gray-700"}`}
+                  className={`p-2 rounded-lg transition ${viewMode === "compact" ? "bg-white dark:bg-white/10 shadow-sm text-primary-600 dark:text-primary-400" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"}`}
                   aria-label="Compact view"
                 >
                   <Grid3X3 className="w-4 h-4" />
@@ -366,11 +366,11 @@ export function ShopContent() {
               <div
                 className={`grid gap-4 md:gap-6 ${
                   viewMode === "compact"
-                    ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-3"
-                    : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3"
+                    ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4"
+                    : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
                 }`}
               >
-                {[...Array(6)].map((_, i) => (
+                {[...Array(8)].map((_, i) => (
                   <Skeleton key={i} className="aspect-square rounded-2xl" />
                 ))}
               </div>
@@ -378,13 +378,13 @@ export function ShopContent() {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-center py-20 rounded-2xl bg-gray-50 border border-gray-100"
+                className="text-center py-20 rounded-2xl lg:rounded-3xl surface-card border border-neutral-200/80 dark:border-[var(--surface-border)]"
               >
-                <Sparkles className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 text-lg mb-4">No products match your filters.</p>
+                <Sparkles className="w-12 h-12 text-neutral-400 dark:text-neutral-500 mx-auto mb-4" />
+                <p className="section-title text-lg mb-4 text-neutral-700 dark:text-neutral-300">No products match your filters.</p>
                 <button
                   onClick={clearFilters}
-                  className="btn-primary"
+                  className="btn-primary rounded-xl"
                 >
                   Clear filters
                 </button>
@@ -394,8 +394,8 @@ export function ShopContent() {
                 layout
                 className={`grid gap-4 md:gap-6 ${
                   viewMode === "compact"
-                    ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-3"
-                    : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3"
+                    ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4"
+                    : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
                 }`}
               >
                 <AnimatePresence mode="popLayout">
@@ -446,7 +446,7 @@ function PriceRangeFilter({
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-gray-900 mb-3">Price range (GHS)</h3>
+      <h3 className="section-title text-sm mb-3 text-neutral-900 dark:text-neutral-100">Price range (GHS)</h3>
       <div className="flex gap-2">
         <input
           type="number"
@@ -456,7 +456,7 @@ function PriceRangeFilter({
           value={min}
           onChange={(e) => setMin(e.target.value)}
           onBlur={handleBlur}
-          className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-primary-500"
+          className="w-full px-3 py-2 rounded-lg input-base text-sm"
         />
         <input
           type="number"
@@ -466,7 +466,7 @@ function PriceRangeFilter({
           value={max}
           onChange={(e) => setMax(e.target.value)}
           onBlur={handleBlur}
-          className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-primary-500"
+          className="w-full px-3 py-2 rounded-lg input-base text-sm"
         />
       </div>
     </div>

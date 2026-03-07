@@ -9,9 +9,11 @@ import { z } from "zod";
 import { motion } from "framer-motion";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { toast } from "sonner";
-import Image from "next/image";
 import { Mail, Lock, ArrowRight } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
+import type { UserRole } from "@/types";
+
+const ADMIN_ROLES: UserRole[] = ["admin", "staff", "super_admin"];
 
 const schema = z.object({
   email: z.string().email("Invalid email"),
@@ -34,10 +36,24 @@ export default function LoginPage() {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword(data);
+      const { data: authData, error } = await supabase.auth.signInWithPassword(data);
       if (error) throw error;
       toast.success("Welcome back!");
-      router.push("/");
+      if (authData.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", authData.user.id)
+          .single();
+        const role = (profile?.role as UserRole) || "user";
+        if (ADMIN_ROLES.includes(role)) {
+          router.push("/admin");
+        } else {
+          router.push("/");
+        }
+      } else {
+        router.push("/");
+      }
       router.refresh();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Login failed";
@@ -52,39 +68,41 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-gray-50/80">
-      <div className="h-48 bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 rounded-b-[2rem]" />
-      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex-1 -mt-32 px-4 pb-8">
-        <div className="surface-card overflow-hidden">
-          <div className="pt-8 pb-6 px-6 text-center">
-            <Link href="/" className="inline-block mb-4">
-              <Logo size="lg" className="justify-center" />
-            </Link>
-            <h1 className="text-xl font-display font-bold text-gray-900 tracking-tight">Welcome back</h1>
-            <p className="text-gray-500 text-sm mt-1">Sign in to continue</p>
+    <div className="min-h-[100dvh] flex flex-col bg-neutral-50/80 dark:bg-[var(--surface-bg)]">
+      <div className="h-48 lg:h-56 bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 rounded-b-[2rem] lg:rounded-b-[3rem]" />
+      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="flex-1 -mt-32 lg:-mt-40 px-4 lg:px-8 pb-8 lg:pb-12">
+        <div className="max-w-md lg:max-w-lg mx-auto">
+          <div className="surface-card overflow-hidden rounded-2xl lg:rounded-3xl shadow-card">
+            <div className="pt-8 lg:pt-10 pb-6 px-6 lg:px-8 text-center">
+              <Link href="/" className="inline-block mb-4 lg:mb-5">
+                <Logo size="lg" className="justify-center" />
+              </Link>
+              <h1 className="hero-title text-xl lg:text-2xl text-neutral-900 dark:text-neutral-100 tracking-tight">Welcome back</h1>
+              <p className="text-description text-sm lg:text-base mt-1">Sign in to continue</p>
+            </div>
+            <form onSubmit={handleSubmit(onSubmit)} className="px-6 lg:px-8 pb-8 lg:pb-10 space-y-4">
+              <div>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
+                  <input {...register("email")} type="email" placeholder="Email" className="input-base pl-12" />
+                </div>
+                {errors.email && <p className="mt-1.5 text-sm text-red-500 px-1">{errors.email.message}</p>}
+              </div>
+              <div>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500 dark:text-neutral-400" />
+                  <input {...register("password")} type="password" placeholder="Password" className="input-base pl-12" />
+                </div>
+                {errors.password && <p className="mt-1.5 text-sm text-red-500 px-1">{errors.password.message}</p>}
+              </div>
+              <Link href="/forgot-password" className="block text-sm text-primary-600 dark:text-primary-400 font-medium text-right py-2">Forgot password?</Link>
+              <motion.button type="submit" disabled={loading} className="btn-primary w-full py-4 rounded-xl" whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+                {loading ? <span className="inline-block w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><span>Sign in</span><ArrowRight className="w-5 h-5" /></>}
+              </motion.button>
+            </form>
           </div>
-          <form onSubmit={handleSubmit(onSubmit)} className="px-6 pb-8 space-y-4">
-            <div>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input {...register("email")} type="email" placeholder="Email" className="input-base pl-12" />
-              </div>
-              {errors.email && <p className="mt-1.5 text-sm text-red-500 px-1">{errors.email.message}</p>}
-            </div>
-            <div>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input {...register("password")} type="password" placeholder="Password" className="input-base pl-12" />
-              </div>
-              {errors.password && <p className="mt-1.5 text-sm text-red-500 px-1">{errors.password.message}</p>}
-            </div>
-            <Link href="/forgot-password" className="block text-sm text-primary-600 font-medium text-right py-2">Forgot password?</Link>
-            <motion.button type="submit" disabled={loading} className="btn-primary w-full py-4">
-              {loading ? <span className="inline-block w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><span>Sign in</span><ArrowRight className="w-5 h-5" /></>}
-            </motion.button>
-          </form>
+          <p className="mt-6 text-center text-description text-sm lg:text-base">Don&apos;t have an account? <Link href="/signup" className="text-primary-600 dark:text-primary-400 font-semibold">Sign up</Link></p>
         </div>
-        <p className="mt-6 text-center text-gray-500 text-sm">Don&apos;t have an account? <Link href="/signup" className="text-primary-600 font-semibold">Sign up</Link></p>
       </motion.div>
     </div>
   );

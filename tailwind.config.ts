@@ -21,6 +21,7 @@ const config: Config = {
           700: "#065f46",
           800: "#064e3b",
           900: "#022c22",
+          950: "#022c22",
         },
         accent: {
           50: "#fffbeb",
@@ -33,6 +34,12 @@ const config: Config = {
           700: "#b45309",
           800: "#92400e",
           900: "#78350f",
+        },
+        surface: {
+          bg: "#0B0B0C",
+          card: "#121214",
+          border: "#1F1F22",
+          "card-hover": "#18181b",
         },
       },
       fontFamily: {
@@ -47,6 +54,8 @@ const config: Config = {
       boxShadow: {
         glass: "0 8px 32px 0 rgba(0, 0, 0, 0.08)",
         "glass-lg": "0 12px 40px -8px rgba(0, 0, 0, 0.12)",
+        float: "0 10px 30px rgba(0,0,0,0.4)",
+        "float-lg": "0 20px 40px rgba(0,0,0,0.35)",
         soft: "0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)",
         "soft-lg": "0 10px 15px -3px rgb(0 0 0 / 0.06), 0 4px 6px -4px rgb(0 0 0 / 0.05)",
         card: "0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05)",
@@ -58,6 +67,7 @@ const config: Config = {
       animation: {
         "fade-in": "fadeIn 0.5s ease-out",
         "slide-up": "slideUp 0.5s ease-out",
+        "shimmer": "shimmer 1.5s ease-in-out infinite",
       },
       keyframes: {
         fadeIn: {
@@ -67,6 +77,10 @@ const config: Config = {
         slideUp: {
           "0%": { opacity: "0", transform: "translateY(20px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        shimmer: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
         },
       },
     },

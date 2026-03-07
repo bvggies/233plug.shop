@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 type LogoVariant = "light" | "dark";
@@ -16,10 +17,10 @@ interface LogoProps {
   asLink?: boolean;
 }
 
-const sizeClasses = {
-  sm: "h-7",
-  md: "h-9",
-  lg: "h-11",
+const sizeMap = {
+  sm: { class: "h-7", width: 28, height: 28 },
+  md: { class: "h-9", width: 36, height: 36 },
+  lg: { class: "h-11", width: 44, height: 44 },
 };
 
 export function Logo({
@@ -29,31 +30,22 @@ export function Logo({
   href = "/",
   asLink = true,
 }: LogoProps) {
-  const isDark = variant === "dark";
-  const heightClass = sizeClasses[size];
+  const { class: heightClass, width, height } = sizeMap[size];
 
   const content = (
     <span
-      className={cn(
-        "inline-flex items-center gap-1.5 font-display font-bold tracking-tight",
-        heightClass,
-        isDark ? "text-white" : "text-primary-600 dark:text-primary-400",
-        className
-      )}
+      className={cn("inline-flex items-center shrink-0", heightClass, className)}
       aria-label="233Plug"
     >
-      <span
-        className={cn(
-          "inline-flex items-center justify-center flex-shrink-0 rounded-lg font-bold text-white",
-          size === "sm" && "w-7 h-7 text-xs",
-          size === "md" && "w-9 h-9 text-sm",
-          size === "lg" && "w-10 h-10 text-base",
-          isDark ? "bg-white/20" : "bg-primary-500"
-        )}
-      >
-        23
-      </span>
-      <span>Plug</span>
+      <Image
+        src="/logo.png"
+        alt="233Plug"
+        width={width}
+        height={height}
+        className="object-contain w-auto h-full"
+        priority
+        unoptimized={false}
+      />
     </span>
   );
 

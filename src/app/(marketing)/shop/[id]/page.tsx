@@ -157,7 +157,7 @@ export default function ProductDetailPage() {
   if (!product) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-16 text-center">
-        <p className="text-gray-500 mb-4">Product not found.</p>
+        <p className="text-neutral-500 dark:text-neutral-400 mb-4">Product not found.</p>
         <Link href="/shop" className="text-primary-500 hover:underline">
           Back to shop
         </Link>
@@ -178,17 +178,17 @@ export default function ProductDetailPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 pb-16">
       {/* Breadcrumbs */}
-      <nav className="flex items-center gap-2 text-sm text-gray-500 mb-8 flex-wrap">
+      <nav className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400 mb-8 flex-wrap">
         <Link href="/" className="hover:text-primary-600 transition">
           Home
         </Link>
-        <ChevronRight className="w-4 h-4 text-gray-400" />
+        <ChevronRight className="w-4 h-4 text-neutral-400" />
         <Link href="/shop" className="hover:text-primary-600 transition">
           Shop
         </Link>
         {category?.slug && (
           <>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <ChevronRight className="w-4 h-4 text-neutral-400" />
             <Link
               href={`/shop?category=${category.slug}`}
               className="hover:text-primary-600 transition"
@@ -197,8 +197,8 @@ export default function ProductDetailPage() {
             </Link>
           </>
         )}
-        <ChevronRight className="w-4 h-4 text-gray-400" />
-        <span className="text-gray-900 truncate max-w-[180px]">{product.name}</span>
+        <ChevronRight className="w-4 h-4 text-neutral-400" />
+        <span className="text-neutral-900 dark:text-neutral-100 truncate max-w-[180px]">{product.name}</span>
       </nav>
 
       <motion.div
@@ -208,7 +208,7 @@ export default function ProductDetailPage() {
       >
         {/* Gallery */}
         <div className="space-y-4">
-          <div className="relative aspect-square rounded-2xl bg-gray-100 overflow-hidden ring-1 ring-gray-100">
+          <div className="relative aspect-square rounded-2xl bg-neutral-100 dark:bg-neutral-800 overflow-hidden ring-1 ring-neutral-100 dark:ring-neutral-700">
             {currentImage ? (
               <Image
                 src={currentImage}
@@ -220,7 +220,7 @@ export default function ProductDetailPage() {
                 unoptimized={currentImage.startsWith("http")}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-400">
+              <div className="w-full h-full flex items-center justify-center text-neutral-400">
                 <span className="text-6xl font-display">233</span>
               </div>
             )}
@@ -274,14 +274,14 @@ export default function ProductDetailPage() {
             <div className="flex gap-2">
             <button
               onClick={toggleWishlist}
-              className={`p-2 rounded-lg transition ${inWishlist ? "text-red-500 bg-red-50" : "text-gray-500 hover:text-red-500 hover:bg-red-50"}`}
+              className={`p-2 rounded-lg transition ${inWishlist ? "text-red-500 bg-red-50 dark:bg-red-900/20" : "text-neutral-500 dark:text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"}`}
               aria-label="Wishlist"
             >
               <Heart className={`w-5 h-5 ${inWishlist ? "fill-current" : ""}`} />
             </button>
             <button
               onClick={handleShare}
-              className="p-2 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition"
+              className="p-2 text-neutral-500 dark:text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-500/10 rounded-lg transition"
               aria-label="Share"
             >
               <Share2 className="w-5 h-5" />
@@ -289,7 +289,7 @@ export default function ProductDetailPage() {
           </div>
           </div>
 
-          <h1 className="text-2xl md:text-3xl font-display font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl md:text-3xl font-display font-bold text-neutral-900 dark:text-neutral-100 mb-2">
             {product.name}
           </h1>
 
@@ -301,7 +301,7 @@ export default function ProductDetailPage() {
             <div className="space-y-3 mb-6">
               {variants.some((v) => v.size) && (
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2">Size</p>
+                  <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Size</p>
                   <div className="flex flex-wrap gap-2">
                     {Array.from(new Set(variants.map((v) => v.size).filter(Boolean))).map((s) => {
                       const v = variants.find((x) => x.size === s);
@@ -324,7 +324,7 @@ export default function ProductDetailPage() {
               )}
               {variants.some((v) => v.color) && (
                 <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2">Color</p>
+                  <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Color</p>
                   <div className="flex flex-wrap gap-2">
                     {Array.from(new Set(variants.map((v) => v.color).filter(Boolean))).map((c) => {
                       const v = variants.find((x) => x.color === c);
@@ -349,7 +349,7 @@ export default function ProductDetailPage() {
           )}
 
           {product.description && (
-            <p className="text-gray-600 mb-6 line-clamp-3 md:line-clamp-none">
+            <p className="text-neutral-600 dark:text-neutral-300 mb-6 line-clamp-3 md:line-clamp-none">
               {product.description}
             </p>
           )}
@@ -370,7 +370,7 @@ export default function ProductDetailPage() {
               {displayStock > 0 ? `${displayStock} in stock` : "Out of stock"}
             </div>
             {product.sku && (
-              <span className="text-sm text-gray-500">SKU: {product.sku}</span>
+              <span className="text-sm text-neutral-500 dark:text-neutral-400">SKU: {product.sku}</span>
             )}
           </div>
 
@@ -380,7 +380,7 @@ export default function ProductDetailPage() {
               <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden w-fit">
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="p-3 text-gray-600 hover:bg-gray-50 transition"
+                  className="p-3 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition"
                   aria-label="Decrease"
                 >
                   <Minus className="w-4 h-4" />
@@ -388,7 +388,7 @@ export default function ProductDetailPage() {
                 <span className="w-12 text-center font-medium">{quantity}</span>
                 <button
                   onClick={() => setQuantity((q) => Math.min(maxQty, q + 1))}
-                  className="p-3 text-gray-600 hover:bg-gray-50 transition"
+                  className="p-3 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition"
                   aria-label="Increase"
                 >
                   <Plus className="w-4 h-4" />
@@ -427,8 +427,8 @@ export default function ProductDetailPage() {
                 <Truck className="w-5 h-5 text-primary-600" />
               </div>
               <div>
-                <p className="font-medium text-gray-900 text-sm">Free Shipping</p>
-                <p className="text-xs text-gray-500">On orders over GHS 500</p>
+                <p className="font-medium text-neutral-900 dark:text-neutral-100 text-sm">Free Shipping</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">On orders over GHS 500</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -436,8 +436,8 @@ export default function ProductDetailPage() {
                 <Shield className="w-5 h-5 text-primary-600" />
               </div>
               <div>
-                <p className="font-medium text-gray-900 text-sm">Secure Payment</p>
-                <p className="text-xs text-gray-500">Paystack & Stripe</p>
+                <p className="font-medium text-neutral-900 dark:text-neutral-100 text-sm">Secure Payment</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">Paystack & Stripe</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -445,8 +445,8 @@ export default function ProductDetailPage() {
                 <Package className="w-5 h-5 text-primary-600" />
               </div>
               <div>
-                <p className="font-medium text-gray-900 text-sm">Sourced Fresh</p>
-                <p className="text-xs text-gray-500">Quality assured</p>
+                <p className="font-medium text-neutral-900 dark:text-neutral-100 text-sm">Sourced Fresh</p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">Quality assured</p>
               </div>
             </div>
           </div>
@@ -466,7 +466,7 @@ export default function ProductDetailPage() {
             className={`pb-3 font-medium text-sm border-b-2 transition ${
               activeTab === "description"
                 ? "border-primary-500 text-primary-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                : "border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
             }`}
           >
             Description
@@ -476,7 +476,7 @@ export default function ProductDetailPage() {
             className={`pb-3 font-medium text-sm border-b-2 transition ${
               activeTab === "shipping"
                 ? "border-primary-500 text-primary-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                : "border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
             }`}
           >
             Shipping & Returns
@@ -486,7 +486,7 @@ export default function ProductDetailPage() {
             className={`pb-3 font-medium text-sm border-b-2 transition ${
               activeTab === "reviews"
                 ? "border-primary-500 text-primary-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
+                : "border-transparent text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
             }`}
           >
             Reviews ({reviews.length})
@@ -494,11 +494,11 @@ export default function ProductDetailPage() {
         </div>
 
         {activeTab === "description" && (
-          <div className="prose prose-gray max-w-none">
+          <div className="prose prose-gray max-w-none text-neutral-700 dark:text-neutral-300">
             {product.description ? (
-              <p className="text-gray-600 whitespace-pre-line">{product.description}</p>
+              <p className="text-neutral-600 dark:text-neutral-300 whitespace-pre-line">{product.description}</p>
             ) : (
-              <p className="text-gray-500">
+              <p className="text-neutral-500 dark:text-neutral-400">
                 No detailed description available. Contact us if you have questions about this product.
               </p>
             )}
@@ -508,17 +508,17 @@ export default function ProductDetailPage() {
         {activeTab === "reviews" && (
           <div className="space-y-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
-              <p className="text-gray-600">{reviews.length} review{reviews.length !== 1 ? "s" : ""}</p>
+              <p className="text-neutral-600 dark:text-neutral-400">{reviews.length} review{reviews.length !== 1 ? "s" : ""}</p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setReviewSort("newest")}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium ${reviewSort === "newest" ? "bg-primary-500 text-white" : "bg-gray-100 text-gray-600"}`}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium ${reviewSort === "newest" ? "bg-primary-500 text-white" : "bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300"}`}
                 >
                   Newest
                 </button>
                 <button
                   onClick={() => setReviewSort("highest")}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium ${reviewSort === "highest" ? "bg-primary-500 text-white" : "bg-gray-100 text-gray-600"}`}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium ${reviewSort === "highest" ? "bg-primary-500 text-white" : "bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300"}`}
                 >
                   Highest
                 </button>
@@ -532,7 +532,7 @@ export default function ProductDetailPage() {
                     <div className="flex items-center gap-2 mb-1">
                       <div className="flex gap-0.5">
                         {[1, 2, 3, 4, 5].map((i) => (
-                          <Star key={i} className={`w-4 h-4 ${i <= r.rating ? "text-amber-500 fill-amber-500" : "text-gray-300"}`} />
+                          <Star key={i} className={`w-4 h-4 ${i <= r.rating ? "text-amber-500 fill-amber-500" : "text-neutral-300 dark:text-neutral-600"}`} />
                         ))}
                       </div>
                       {r.order_id && (
@@ -540,20 +540,20 @@ export default function ProductDetailPage() {
                           <BadgeCheck className="w-3 h-3" /> Verified purchase
                         </span>
                       )}
-                      <span className="text-sm text-gray-500 ml-auto">{formatDate(r.created_at)}</span>
+                      <span className="text-sm text-neutral-500 dark:text-neutral-400 ml-auto">{formatDate(r.created_at)}</span>
                     </div>
-                    {r.comment && <p className="text-gray-700 text-sm mt-2">{r.comment}</p>}
+                    {r.comment && <p className="text-neutral-700 dark:text-neutral-300 text-sm mt-2">{r.comment}</p>}
                   </div>
                 ))}
-              {reviews.length === 0 && <p className="text-gray-500 py-8 text-center">No reviews yet.</p>}
+              {reviews.length === 0 && <p className="text-neutral-500 dark:text-neutral-400 py-8 text-center">No reviews yet.</p>}
             </div>
           </div>
         )}
 
         {activeTab === "shipping" && (
-          <div className="space-y-6 text-gray-600">
+          <div className="space-y-6 text-neutral-600 dark:text-neutral-400">
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Shipping</h4>
+              <h4 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-2">Shipping</h4>
               <ul className="list-disc list-inside space-y-1 text-sm">
                 <li>Free shipping on orders over GHS 500</li>
                 <li>Delivery within 5–10 business days in Ghana</li>
@@ -561,7 +561,7 @@ export default function ProductDetailPage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 mb-2">Returns</h4>
+              <h4 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-2">Returns</h4>
               <ul className="list-disc list-inside space-y-1 text-sm">
                 <li>14-day return policy for unused items</li>
                 <li>Contact support to initiate a return</li>
@@ -579,7 +579,7 @@ export default function ProductDetailPage() {
           transition={{ delay: 0.3 }}
           className="mt-20"
         >
-          <h2 className="text-xl font-display font-bold text-gray-900 mb-6">
+          <h2 className="text-xl font-display font-bold text-neutral-900 dark:text-neutral-100 mb-6">
             You may also like
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -604,7 +604,7 @@ export default function ProductDetailPage() {
       <div className="mt-12">
         <Link
           href="/shop"
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-primary-500 transition"
+          className="inline-flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-primary-500 transition"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to shop

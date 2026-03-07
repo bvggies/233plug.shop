@@ -48,31 +48,42 @@ export default function DashboardWishlistPage() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/dashboard/profile" className="p-2 -ml-2 rounded-full hover:bg-gray-100">
-          <ChevronLeft className="w-5 h-5 text-gray-600" />
+        <Link href="/dashboard/profile" className="p-2 -ml-2 rounded-xl hover:bg-neutral-100 dark:hover:bg-white/5 transition-colors">
+          <ChevronLeft className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
         </Link>
-        <h1 className="text-xl font-display font-bold text-gray-900">Wishlist</h1>
+        <h1 className="section-title text-neutral-900 dark:text-neutral-100">Wishlist</h1>
       </div>
 
       {products.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-            <Heart className="w-8 h-8 text-gray-400" />
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="surface-card rounded-2xl md:rounded-3xl p-12 text-center"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-primary-500/10 dark:bg-primary-500/20 flex items-center justify-center mx-auto mb-4">
+            <Heart className="w-8 h-8 text-primary-500 dark:text-primary-400" />
           </div>
-          <p className="text-gray-600 mb-2">Your wishlist is empty</p>
-          <p className="text-sm text-gray-500 mb-6">Save items you love for later</p>
-          <Link href="/shop" className="inline-block px-4 py-2.5 bg-primary-500 text-white font-medium rounded-xl hover:bg-primary-600">
+          <p className="text-neutral-700 dark:text-neutral-300 mb-2">Your wishlist is empty</p>
+          <p className="text-description mb-6">Save items you love for later</p>
+          <Link href="/shop" className="btn-primary inline-flex">
             Browse shop
           </Link>
-        </div>
+        </motion.div>
       ) : (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-6"
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
         >
-          {products.map((p) => (
-            <ProductCard key={p.id} product={p} compact />
+          {products.map((p, i) => (
+            <motion.div
+              key={p.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+            >
+              <ProductCard product={p} compact />
+            </motion.div>
           ))}
         </motion.div>
       )}

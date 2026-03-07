@@ -42,11 +42,11 @@ export function GlassFABNav() {
         exit={{ y: 100, opacity: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className={cn(
-          "fixed bottom-4 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 md:max-w-md z-50 transition-all duration-300",
+          "fixed bottom-4 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 md:max-w-md z-50",
           !visible && "translate-y-24 opacity-0 pointer-events-none"
         )}
       >
-        <div className="glass-card flex items-center justify-around py-3 px-2 max-w-md mx-auto">
+        <div className="glass-premium flex items-center justify-around py-3 px-2 max-w-md mx-auto rounded-3xl shadow-[var(--shadow-float)] dark:shadow-[var(--shadow-float)]">
           {navItems.map((item) => {
             const isActive =
               pathname === item.href ||
@@ -54,34 +54,38 @@ export function GlassFABNav() {
             const Icon = item.icon;
 
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="relative flex flex-col items-center gap-1 min-w-[56px]"
-              >
+              <Link key={item.href} href={item.href} className="relative flex flex-col items-center gap-1 min-w-[56px]">
                 <motion.span
                   whileHover={{ scale: 1.08 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={{ scale: 0.92 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
                   className={cn(
                     "flex items-center justify-center p-2.5 rounded-xl transition-colors min-w-[44px]",
-                    isActive ? "bg-primary-500/12 text-primary-600 dark:bg-primary-500/20 dark:text-primary-400" : "text-gray-500 hover:text-primary-600 hover:bg-gray-100/80 dark:text-gray-400 dark:hover:text-primary-400 dark:hover:bg-gray-700/80"
+                    isActive
+                      ? "bg-primary-600/20 dark:bg-primary-500/20 text-primary-500 dark:text-primary-400 shadow-inner"
+                      : "text-neutral-500 dark:text-neutral-400 hover:bg-white/5 dark:hover:bg-white/5 hover:text-neutral-700 dark:hover:text-neutral-200"
                   )}
                 >
                   {item.badge && totalItems > 0 ? (
-                    <span className="relative">
+                    <motion.span
+                      key={totalItems}
+                      initial={{ scale: 0.5 }}
+                      animate={{ scale: 1 }}
+                      className="relative"
+                    >
                       <Icon className="w-6 h-6" />
-                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-accent-500 text-white text-xs font-bold rounded-full px-1">
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-accent-500 text-white text-xs font-bold rounded-full px-1 shadow-md">
                         {totalItems > 99 ? "99+" : totalItems}
                       </span>
-                    </span>
+                    </motion.span>
                   ) : (
                     <Icon className="w-6 h-6" />
                   )}
                 </motion.span>
                 <span
                   className={cn(
-                    "text-[11px] font-medium",
-                    isActive ? "text-primary-600 dark:text-primary-400" : "text-gray-500 dark:text-gray-400"
+                    "text-[11px] font-medium transition-colors",
+                    isActive ? "text-primary-600 dark:text-primary-400" : "text-neutral-500 dark:text-neutral-400"
                   )}
                 >
                   {item.label}

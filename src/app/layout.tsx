@@ -21,6 +21,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "233Plug - Premium E-Commerce",
   description: "Shop perfumes, sneakers, electronics & accessories. Request-to-buy sourcing from Ghana.",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
   openGraph: {
     title: "233Plug - Premium E-Commerce",
     description: "Shop perfumes, sneakers, electronics & accessories.",

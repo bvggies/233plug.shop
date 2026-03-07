@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { CreditCard, Wallet, Tag, X } from "lucide-react";
+import { CreditCard, Wallet, Tag, X, Shield, MapPin } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
 import { formatPrice } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -32,6 +32,7 @@ export default function CheckoutPage() {
   const [appliedCoupon, setAppliedCoupon] = useState<CouponResult | null>(null);
   const [couponError, setCouponError] = useState("");
   const [applying, setApplying] = useState(false);
+  const [shippingAddress, setShippingAddress] = useState("");
   const supabase = createClient();
 
   useEffect(() => {
@@ -42,10 +43,15 @@ export default function CheckoutPage() {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("wallet_balance")
+      .select("wallet_balance, address")
       .eq("id", user.id)
       .single()
-      .then(({ data }) => setWalletBalance(data?.wallet_balance ?? 0));
+      .then(({ data }) => {
+        if (data) {
+          setWalletBalance(data.wallet_balance ?? 0);
+          setShippingAddress(data.address || "");
+        }
+      });
   }, [user, supabase]);
 
   const subtotal = totalPrice();
@@ -219,110 +225,157 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-display font-bold text-gray-900 mb-8">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+      <h1 className="section-title text-neutral-900 dark:text-neutral-100 mb-8">
         Checkout
       </h1>
 
-      <div className="grid lg:grid-cols-2 gap-8">
+      <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
-          <h3 className="font-semibold text-lg">Payment method</h3>
-          <div className="space-y-3">
-            <button
-              onClick={() => setPaymentMethod("paystack")}
-              className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition ${
-                paymentMethod === "paystack"
-                  ? "border-primary-500 bg-primary-50"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
-            >
-              <CreditCard className="w-6 h-6" />
-              <span>Paystack (GHS)</span>
-            </button>
-            <button
-              onClick={() => setPaymentMethod("stripe")}
-              className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition ${
-                paymentMethod === "stripe"
-                  ? "border-primary-500 bg-primary-50"
-                  : "border-gray-200 hover:border-gray-300"
-              }`}
-            >
-              <CreditCard className="w-6 h-6" />
-              <span>Stripe (USD)</span>
-            </button>
-            <button
-              onClick={() => setPaymentMethod("wallet")}
-              disabled={!canUseWallet}
-              className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition ${
-                paymentMethod === "wallet"
-                  ? "border-primary-500 bg-primary-50"
-                  : "border-gray-200 hover:border-gray-300"
-              } ${!canUseWallet ? "opacity-50 cursor-not-allowed" : ""}`}
-            >
-              <Wallet className="w-6 h-6" />
-              <span>
-                Wallet ({formatPrice(walletBalance, "GHS")})
-                {!canUseWallet && " - Insufficient balance"}
-              </span>
-            </button>
+          {/* 1. Shipping Address */}
+          <div className="surface-card rounded-2xl md:rounded-3xl p-6">
+            <h3 className="font-semibold text-lg text-neutral-900 dark:text-neutral-100 mb-4 flex items-center gap-2">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-500/10 dark:bg-primary-500/20 text-primary-600 dark:text-primary-400 text-sm font-bold">1</span>
+              Shipping Address
+            </h3>
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-neutral-50 dark:bg-white/5 border border-neutral-200/80 dark:border-[var(--surface-border)]">
+              <MapPin className="w-5 h-5 text-neutral-500 dark:text-neutral-400 shrink-0 mt-0.5" />
+              <div>
+                {shippingAddress ? (
+                  <p className="text-sm text-neutral-900 dark:text-neutral-100">{shippingAddress}</p>
+                ) : (
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">No address saved. You can add one in your profile.</p>
+                )}
+                <Link href="/dashboard/addresses" className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline mt-1 inline-block">Change address</Link>
+              </div>
+            </div>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-3 flex items-center gap-1.5">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary-500" />
+              Usually ships in 3–5 business days
+            </p>
+          </div>
+
+          {/* 2. Payment method */}
+          <div className="surface-card rounded-2xl md:rounded-3xl p-6">
+            <h3 className="font-semibold text-lg text-neutral-900 dark:text-neutral-100 mb-4 flex items-center gap-2">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-500/10 dark:bg-primary-500/20 text-primary-600 dark:text-primary-400 text-sm font-bold">2</span>
+              Payment Method
+            </h3>
+            <div className="space-y-3">
+              <button
+                onClick={() => setPaymentMethod("paystack")}
+                className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
+                  paymentMethod === "paystack"
+                    ? "border-primary-500 bg-primary-500/10 dark:bg-primary-500/20"
+                    : "border-neutral-200 dark:border-[var(--surface-border)] hover:border-neutral-300 dark:hover:border-[var(--surface-border)]"
+                }`}
+              >
+                <CreditCard className="w-6 h-6 text-neutral-700 dark:text-neutral-300" />
+                <span className="text-neutral-900 dark:text-neutral-100">Paystack (GHS)</span>
+              </button>
+              <button
+                onClick={() => setPaymentMethod("stripe")}
+                className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
+                  paymentMethod === "stripe"
+                    ? "border-primary-500 bg-primary-500/10 dark:bg-primary-500/20"
+                    : "border-neutral-200 dark:border-[var(--surface-border)] hover:border-neutral-300 dark:hover:border-[var(--surface-border)]"
+                }`}
+              >
+                <CreditCard className="w-6 h-6 text-neutral-700 dark:text-neutral-300" />
+                <span className="text-neutral-900 dark:text-neutral-100">Stripe (USD)</span>
+              </button>
+              <button
+                onClick={() => setPaymentMethod("wallet")}
+                disabled={!canUseWallet}
+                className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all ${
+                  paymentMethod === "wallet"
+                    ? "border-primary-500 bg-primary-500/10 dark:bg-primary-500/20"
+                    : "border-neutral-200 dark:border-[var(--surface-border)]"
+                } ${!canUseWallet ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <Wallet className="w-6 h-6 text-neutral-700 dark:text-neutral-300" />
+                <span className="text-neutral-900 dark:text-neutral-100">
+                  Wallet ({formatPrice(walletBalance, "GHS")})
+                  {!canUseWallet && " – Insufficient balance"}
+                </span>
+              </button>
+            </div>
           </div>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-6 bg-white rounded-2xl border border-gray-100 shadow-soft h-fit"
+          transition={{ delay: 0.1 }}
+          className="space-y-6"
         >
-          <h3 className="font-semibold text-lg mb-4">Order total</h3>
-          {!appliedCoupon ? (
+          {/* 3. Order summary */}
+          <div className="surface-card rounded-2xl md:rounded-3xl p-6 lg:sticky lg:top-24 shadow-[var(--shadow-float)] dark:shadow-[var(--shadow-float)]">
+            <h3 className="font-semibold text-lg text-neutral-900 dark:text-neutral-100 mb-4 flex items-center gap-2">
+              <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-500/10 dark:bg-primary-500/20 text-primary-600 dark:text-primary-400 text-sm font-bold">3</span>
+              Order Summary
+            </h3>
+            {!appliedCoupon ? (
             <div className="flex gap-2 mb-4">
               <div className="relative flex-1">
-                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                 <input
                   value={couponCode}
                   onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError(""); }}
                   placeholder="Coupon code"
-                  className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm"
+                  className="input-base pl-9 py-2.5 text-sm"
                 />
               </div>
-              <button onClick={applyCoupon} disabled={applying} className="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 disabled:opacity-50">
+              <button onClick={applyCoupon} disabled={applying} className="btn-secondary px-4 py-2.5 text-sm whitespace-nowrap">
                 {applying ? "..." : "Apply"}
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between mb-4 px-3 py-2 bg-primary-50 rounded-xl">
-              <span className="text-sm font-medium text-primary-700">{appliedCoupon.code} applied</span>
-              <button onClick={removeCoupon} className="p-1 rounded hover:bg-primary-100"><X className="w-4 h-4" /></button>
+            <div className="flex items-center justify-between mb-4 px-3 py-2 bg-primary-500/10 dark:bg-primary-500/20 rounded-xl">
+              <span className="text-sm font-medium text-primary-700 dark:text-primary-300">{appliedCoupon.code} applied</span>
+              <button onClick={removeCoupon} className="p-1 rounded hover:bg-primary-500/20"><X className="w-4 h-4" /></button>
             </div>
           )}
           {couponError && <p className="text-sm text-red-500 mb-2">{couponError}</p>}
           <div className="space-y-2 mb-6">
-            <div className="flex justify-between text-gray-600">
+            <div className="flex justify-between text-neutral-600 dark:text-neutral-400">
               <span>Subtotal</span>
               <span>{formatPrice(subtotal, "GHS")}</span>
             </div>
             {discountAmount > 0 && (
-              <div className="flex justify-between text-green-600">
+              <div className="flex justify-between text-primary-600 dark:text-primary-400">
                 <span>Discount</span>
                 <span>-{formatPrice(discountAmount, "GHS")}</span>
               </div>
             )}
-            <div className="flex justify-between font-semibold text-xl pt-2 border-t border-gray-100">
-              <span>Total</span>
-              <span className="text-primary-600">{formatPrice(total, "GHS")}</span>
-            </div>
+            <motion.div
+              key={total}
+              initial={{ opacity: 0.7, scale: 0.99 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex justify-between font-semibold text-xl pt-3 border-t border-neutral-100 dark:border-[var(--surface-border)]"
+            >
+              <span className="text-neutral-900 dark:text-neutral-100">Total</span>
+              <span className="text-primary-600 dark:text-primary-400">{formatPrice(total, "GHS")}</span>
+            </motion.div>
           </div>
-          <button
+          <motion.button
             onClick={handleCheckout}
             disabled={loading}
-            className="w-full py-4 px-6 bg-primary-500 text-white font-medium rounded-xl hover:bg-primary-600 disabled:opacity-50"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="btn-primary w-full py-4 rounded-xl"
           >
-            {loading ? "Processing..." : "Place Order"}
-          </button>
+            {loading ? "Processing…" : "Place Order"}
+          </motion.button>
+          <div className="flex items-center justify-center gap-2 pt-3 text-xs text-neutral-500 dark:text-neutral-400">
+            <Shield className="w-4 h-4 text-primary-500" />
+            <span>Secure payment · Your data is protected</span>
+          </div>
+          </div>
         </motion.div>
       </div>
     </div>

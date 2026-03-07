@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { toast } from "sonner";
-import { X, Send, Edit2, ShoppingCart } from "lucide-react";
+import { X, Send, Edit2, ShoppingCart, MessageSquare } from "lucide-react";
 
 type RequestRow = {
   id: string;
@@ -41,6 +41,10 @@ export default function AdminRequestsPage() {
   const [editingQuote, setEditingQuote] = useState(false);
   const [saving, setSaving] = useState(false);
   const [converting, setConverting] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState("");
+  const [newStatusChoice, setNewStatusChoice] = useState("");
+  const [savingUpdate, setSavingUpdate] = useState(false);
+  const [updates, setUpdates] = useState<{ id: string; message: string; status_snapshot: string | null; created_at: string }[]>([]);
   const supabase = createClient();
 
   const load = () => {
@@ -58,6 +62,67 @@ export default function AdminRequestsPage() {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional single run on mount
   }, []);
+
+  useEffect(() => {
+    if (!selected) {
+      setUpdates([]);
+      setUpdateMessage("");
+      setNewStatusChoice("");
+      return;
+    }
+    setUpdateMessage("");
+    setNewStatusChoice("");
+    supabase
+      .from("request_updates")
+      .select("id, message, status_snapshot, created_at")
+      .eq("request_id", selected.id)
+      .order("created_at", { ascending: true })
+      .then(({ data }) => setUpdates((data as { id: string; message: string; status_snapshot: string | null; created_at: string }[]) || []));
+  }, [selected?.id, supabase]);
+
+  const addUpdate = async () => {
+    if (!selected || !updateMessage.trim()) {
+      toast.error("Enter a message for the customer");
+      return;
+    }
+    setSavingUpdate(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const newStatus = newStatusChoice && newStatusChoice !== selected.status ? newStatusChoice : null;
+      const { error: updateErr } = await supabase
+        .from("request_updates")
+        .insert({
+          request_id: selected.id,
+          message: updateMessage.trim(),
+          status_snapshot: newStatus,
+          created_by: user?.id ?? null,
+        });
+      if (updateErr) throw updateErr;
+      if (newStatus) {
+        await supabase.from("requests").update({ status: newStatus }).eq("id", selected.id);
+        await supabase.from("notifications").insert({
+          user_id: selected.user_id,
+          type: "request_status",
+          message: `Update on "${selected.product_name}": ${updateMessage.trim().slice(0, 80)}${updateMessage.length > 80 ? "…" : ""}`,
+        });
+      }
+      toast.success("Update posted");
+      setUpdateMessage("");
+      setNewStatusChoice("");
+      load();
+      const { data } = await supabase
+        .from("request_updates")
+        .select("id, message, status_snapshot, created_at")
+        .eq("request_id", selected.id)
+        .order("created_at", { ascending: true });
+      setUpdates((data as { id: string; message: string; status_snapshot: string | null; created_at: string }[]) || []);
+      if (selected) setSelected({ ...selected, status: newStatus || selected.status });
+    } catch {
+      toast.error("Failed to post update");
+    } finally {
+      setSavingUpdate(false);
+    }
+  };
 
   const sendQuote = async (isUpdate = false) => {
     if (!selected || !quotePrice || isNaN(parseFloat(quotePrice))) {
@@ -207,7 +272,7 @@ export default function AdminRequestsPage() {
       )}
 
       {selected && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setSelected(null); setEditingQuote(false); }}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setSelected(null); setEditingQuote(false); setUpdateMessage(""); setNewStatusChoice(""); }}>
           <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
             <div className="p-6 border-b border-gray-100 flex justify-between items-start">
               <h2 className="text-lg font-display font-bold text-gray-900">{selected.product_name}</h2>
@@ -295,6 +360,55 @@ export default function AdminRequestsPage() {
                   </select>
                 </div>
               )}
+
+              {/* Updates visible to customer */}
+              <div className="pt-4 border-t border-gray-100 space-y-3">
+                <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" /> Updates (visible to customer)
+                </h3>
+                {updates.length > 0 && (
+                  <ul className="space-y-2 max-h-32 overflow-y-auto">
+                    {updates.map((u) => (
+                      <li key={u.id} className="text-sm pl-3 border-l-2 border-gray-200 py-1">
+                        <p className="text-gray-700">{u.message}</p>
+                        {u.status_snapshot && (
+                          <span className="text-xs text-gray-500">Status: {u.status_snapshot.replace("_", " ")}</span>
+                        )}
+                        <p className="text-xs text-gray-500 mt-0.5">{formatDate(u.created_at)}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Add update</label>
+                  <textarea
+                    value={updateMessage}
+                    onChange={(e) => setUpdateMessage(e.target.value)}
+                    placeholder="e.g. We've sourced your item. Quote coming soon."
+                    rows={2}
+                    className="w-full px-4 py-2 rounded-xl border border-gray-200 text-sm"
+                  />
+                  <div className="flex gap-2 mt-2 flex-wrap">
+                    <select
+                      value={newStatusChoice}
+                      onChange={(e) => setNewStatusChoice(e.target.value)}
+                      className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm"
+                    >
+                      <option value="">No status change</option>
+                      {Object.keys(statusColors).map((s) => (
+                        <option key={s} value={s}>{s.replace("_", " ")}</option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={addUpdate}
+                      disabled={savingUpdate || !updateMessage.trim()}
+                      className="px-4 py-1.5 bg-primary-500 text-white text-sm font-medium rounded-lg disabled:opacity-50 flex items-center gap-1.5"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" /> Post update
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

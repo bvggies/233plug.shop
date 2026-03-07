@@ -9,10 +9,10 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950">
+    <div className="min-h-screen flex flex-col bg-neutral-50 dark:bg-[var(--surface-bg)]">
       <AnnouncementBanner />
       <Header />
-      <main className="flex-1 pb-24 md:pb-10">{children}</main>
+      <main className="flex-1 flex flex-col relative z-0 pb-24 md:pb-10 lg:px-8">{children}</main>
       <Footer />
       <div className="md:hidden">
         <GlassFABNav />

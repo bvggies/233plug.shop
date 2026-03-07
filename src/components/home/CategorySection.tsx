@@ -54,8 +54,8 @@ function ProductTile({
         className="group h-full surface-card-hover overflow-hidden"
       >
         <div
-          className={`relative overflow-hidden bg-gray-100 ${
-            isLarge ? "aspect-[4/5]" : isCompact ? "aspect-square" : "aspect-square"
+          className={`relative overflow-hidden bg-neutral-100 dark:bg-neutral-800/80 ${
+            isLarge ? "aspect-[3/4] md:aspect-auto md:h-full min-h-0" : isCompact ? "aspect-square" : "aspect-square"
           }`}
         >
           {image ? (
@@ -64,29 +64,29 @@ function ProductTile({
               alt={product.name}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-500"
-              sizes={isLarge ? "600px" : "400px"}
+              sizes={isLarge ? "(max-width: 768px) 100vw, 380px" : "(max-width: 768px) 50vw, 220px"}
               unoptimized={image.startsWith("http")}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400">
+            <div className="w-full h-full flex items-center justify-center text-neutral-500 dark:text-neutral-400">
               <span className="text-4xl font-display">233</span>
             </div>
           )}
           {showAddToCart && product.stock > 0 && (
             <motion.button
               onClick={handleAddToCart}
-              className="btn-primary absolute bottom-3 left-1/2 -translate-x-1/2 opacity-95 hover:opacity-100"
+              className="btn-primary absolute bottom-3 left-1/2 -translate-x-1/2 opacity-95 hover:opacity-100 text-sm py-2"
             >
-              <ShoppingCart className="w-4 h-4" />
+              <ShoppingCart className="w-3.5 h-3.5" />
               Add to cart
             </motion.button>
           )}
         </div>
-        <div className={isCompact ? "p-3" : "p-4"}>
-          <h3 className={`font-medium text-gray-900 line-clamp-2 ${isCompact ? "text-sm" : ""}`}>
+        <div className={isCompact ? "p-2.5 md:p-3" : "p-3 md:p-4"}>
+          <h3 className={`font-medium text-neutral-900 dark:text-neutral-100 line-clamp-2 ${isCompact ? "text-xs md:text-sm" : "text-sm md:text-base"}`}>
             {product.name}
           </h3>
-          <p className={`text-primary-600 font-semibold ${isCompact ? "text-sm mt-0.5" : "mt-1"}`}>
+          <p className={`text-primary-600 dark:text-primary-400 font-semibold ${isCompact ? "text-xs md:text-sm mt-0.5" : "text-sm mt-1"}`}>
             {formatPrice(product.price, product.currency)}
           </p>
         </div>
@@ -124,9 +124,9 @@ export function CategorySection({ name, slug, layout, accent }: CategorySectionP
 
   if (loading) {
     return (
-      <section className="max-w-7xl mx-auto px-4 py-16">
-        <Skeleton className="h-10 w-48 mb-8" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+        <Skeleton className="h-8 w-40 mb-6" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {[...Array(4)].map((_, i) => (
             <Skeleton key={i} className="aspect-square rounded-2xl" />
           ))}
@@ -150,19 +150,19 @@ export function CategorySection({ name, slug, layout, accent }: CategorySectionP
   };
 
   return (
-    <section className="max-w-7xl mx-auto px-4 py-16 md:py-24">
+    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="flex items-end justify-between gap-4 mb-10"
+        className="flex items-end justify-between gap-4 mb-6 md:mb-8"
       >
-        <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 tracking-tight">
+        <h2 className="section-title text-2xl md:text-3xl text-neutral-900 dark:text-neutral-100 tracking-tight">
           {name}
         </h2>
         <Link
           href={`/shop?category=${slug}`}
-          className="group flex items-center gap-2 text-primary-600 font-semibold hover:text-primary-700 transition"
+          className="group flex items-center gap-2 text-primary-600 dark:text-primary-400 font-semibold hover:text-primary-700 dark:hover:text-primary-300 transition text-sm"
         >
           View all
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -175,16 +175,16 @@ export function CategorySection({ name, slug, layout, accent }: CategorySectionP
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6"
+          className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4"
         >
-          <motion.div variants={itemVariants} className="lg:col-span-7">
+          <motion.div variants={itemVariants} className="lg:col-span-6">
             {products[0] && (
-              <div className="h-full min-h-[400px] md:min-h-[500px]">
+              <div className="h-full min-h-[260px] md:min-h-0 md:h-[320px]">
                 <ProductTile product={products[0]} size="large" />
               </div>
             )}
           </motion.div>
-          <motion.div variants={itemVariants} className="lg:col-span-5 grid grid-cols-2 gap-4 md:gap-6">
+          <motion.div variants={itemVariants} className="lg:col-span-6 grid grid-cols-2 gap-3 md:gap-4">
             {products.slice(1, 5).map((p) => (
               <ProductTile key={p.id} product={p} size="compact" />
             ))}
@@ -198,11 +198,11 @@ export function CategorySection({ name, slug, layout, accent }: CategorySectionP
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4"
+          className="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-3"
         >
           <motion.div variants={itemVariants} className="md:col-span-2 md:row-span-2">
             {products[0] && (
-              <div className="h-full min-h-[280px] md:min-h-[400px]">
+              <div className="h-full min-h-[200px] md:min-h-0 md:h-[280px]">
                 <ProductTile product={products[0]} size="large" />
               </div>
             )}
@@ -220,9 +220,9 @@ export function CategorySection({ name, slug, layout, accent }: CategorySectionP
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="relative -mx-4 md:-mx-6"
+          className="relative -mx-4 md:-mx-4"
         >
-          <div className="flex gap-4 overflow-x-auto pb-4 px-4 md:px-6 scrollbar-hide snap-x snap-mandatory">
+          <div className="flex gap-3 overflow-x-auto pb-4 px-4 md:px-0 scrollbar-hide snap-x snap-mandatory">
             {products.map((p, i) => (
               <motion.div
                 key={p.id}
@@ -230,7 +230,7 @@ export function CategorySection({ name, slug, layout, accent }: CategorySectionP
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.05 }}
-                className="flex-shrink-0 w-[260px] md:w-[300px] snap-start"
+                className="flex-shrink-0 w-[44vw] sm:w-[200px] md:w-[220px] snap-start"
               >
                 <ProductTile product={p} />
               </motion.div>
@@ -245,7 +245,7 @@ export function CategorySection({ name, slug, layout, accent }: CategorySectionP
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5"
         >
           {products.slice(0, 4).map((p, i) => (
             <motion.div
@@ -258,27 +258,27 @@ export function CategorySection({ name, slug, layout, accent }: CategorySectionP
                   whileHover={{ y: -6 }}
                   className="group h-full surface-card-hover overflow-hidden"
                 >
-                  <div className={`relative overflow-hidden bg-gray-100 ${i === 0 ? "aspect-[4/5]" : "aspect-square"}`}>
+                  <div className={`relative overflow-hidden bg-gray-100 dark:bg-neutral-800 ${i === 0 ? "h-[220px] md:h-[280px]" : "aspect-square"}`}>
                     {p.images?.[0] ? (
                       <Image
                         src={p.images[0]}
                         alt={p.name}
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        sizes={i === 0 ? "600px" : "300px"}
+                        sizes={i === 0 ? "(max-width: 768px) 100vw, 400px" : "(max-width: 768px) 50vw, 240px"}
                         unoptimized={p.images[0].startsWith("http")}
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      <div className="w-full h-full flex items-center justify-center text-neutral-500 dark:text-neutral-400">
                         <span className="text-4xl font-display">233</span>
                       </div>
                     )}
                   </div>
-                  <div className={`p-4 ${i === 0 ? "md:p-6" : ""}`}>
-                    <h3 className={`font-display font-semibold text-gray-900 ${i === 0 ? "text-xl md:text-2xl" : "text-base"}`}>
+                  <div className={`p-3 md:p-4 ${i === 0 ? "md:p-4" : ""}`}>
+                    <h3 className={`font-display font-semibold text-gray-900 dark:text-gray-100 ${i === 0 ? "text-base md:text-lg" : "text-sm"}`}>
                       {p.name}
                     </h3>
-                    <p className={`text-primary-600 font-semibold mt-1 ${i === 0 ? "text-lg" : "text-sm"}`}>
+                    <p className={`text-primary-600 font-semibold mt-0.5 ${i === 0 ? "text-sm md:text-base" : "text-xs md:text-sm"}`}>
                       {formatPrice(p.price, p.currency)}
                     </p>
                   </div>

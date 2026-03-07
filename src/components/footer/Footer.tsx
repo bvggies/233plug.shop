@@ -112,7 +112,7 @@ export function Footer() {
   };
 
   return (
-    <footer className="relative mt-24 overflow-hidden">
+    <footer className="relative z-10 mt-24 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-neutral-50 via-neutral-900 to-neutral-950 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(245,158,11,0.06),transparent)]" />
@@ -123,9 +123,9 @@ export function Footer() {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="relative -mt-16 mx-4 mb-0"
+        className="relative -mt-16 mx-4 md:mx-6 lg:mx-auto lg:max-w-5xl mb-0"
       >
-        <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
           {features.map((f, i) => (
             <motion.div
               key={f.title}
@@ -134,39 +134,39 @@ export function Footer() {
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
               whileHover={{ y: -4 }}
-              className="flex items-center gap-4 p-4 rounded-2xl surface-card hover:shadow-card-hover transition-shadow"
+              className="flex items-center gap-4 p-4 lg:p-5 rounded-2xl lg:rounded-3xl surface-card hover:shadow-card-hover transition-all"
             >
-              <div className="p-2.5 rounded-xl bg-primary-500/10 text-primary-600">
-                <f.icon className="w-5 h-5" />
+              <div className="p-2.5 lg:p-3 rounded-xl bg-primary-500/10 dark:bg-primary-500/20 text-primary-600 dark:text-primary-400">
+                <f.icon className="w-5 h-5 lg:w-6 lg:h-6" />
               </div>
               <div>
-                <p className="font-semibold text-gray-900 text-sm">{f.title}</p>
-                <p className="text-gray-500 text-xs">{f.desc}</p>
+                <p className="font-semibold text-neutral-900 dark:text-neutral-100 text-sm lg:text-base">{f.title}</p>
+                <p className="text-description text-xs lg:text-sm">{f.desc}</p>
               </div>
             </motion.div>
           ))}
         </div>
       </motion.div>
 
-      <div className="relative max-w-7xl mx-auto px-4 pt-16 pb-8">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 lg:pt-20 pb-10 lg:pb-12">
         <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-10"
         >
           {/* Brand column */}
           <motion.div variants={itemVariants} className="lg:col-span-5">
             <Link href="/" className="inline-block mb-6">
               <motion.div
                 whileHover={{ scale: 1.02 }}
-                className="inline-flex p-3 rounded-xl bg-white/10 ring-2 ring-white/20"
+                className="inline-flex p-3 lg:p-4 rounded-2xl bg-white/10 ring-2 ring-white/20"
               >
                 <Logo variant="dark" size="lg" asLink={false} />
               </motion.div>
             </Link>
-            <p className="text-gray-400 text-sm leading-relaxed mb-6 max-w-sm">
+            <p className="text-neutral-400 text-sm lg:text-base leading-relaxed mb-6 max-w-sm">
               Premium e-commerce platform. Shop perfumes, sneakers, electronics &
               accessories. Request-to-buy sourcing from Ghana.
             </p>
@@ -182,7 +182,7 @@ export function Footer() {
                   transition={{ delay: 0.2 + i * 0.05 }}
                   whileHover={{ scale: 1.15, y: -2 }}
                   whileTap={{ scale: 0.95 }}
-                  className="p-2.5 rounded-xl bg-gray-800/80 text-gray-400 hover:bg-primary-500/20 hover:text-accent-400 transition-colors"
+                  className="p-2.5 rounded-xl bg-neutral-800/80 text-neutral-400 hover:bg-primary-500/20 hover:text-accent-400 transition-colors"
                 >
                   <Icon className="w-5 h-5" />
                 </motion.a>
@@ -192,7 +192,7 @@ export function Footer() {
 
           {/* Categories */}
           <motion.div variants={itemVariants} className="lg:col-span-2">
-            <h3 className="font-display font-semibold text-white mb-4">
+            <h3 className="section-title text-white mb-4 lg:mb-5 text-lg lg:text-xl">
               Categories
             </h3>
             <ul className="space-y-3">
@@ -200,7 +200,7 @@ export function Footer() {
                 <li key={cat.href}>
                   <AnimatedLink
                     href={cat.href}
-                    className="text-gray-400 hover:text-accent-400 text-sm transition-colors"
+                    className="text-neutral-400 hover:text-accent-400 text-sm lg:text-base transition-colors"
                   >
                     {cat.name}
                   </AnimatedLink>
@@ -211,7 +211,7 @@ export function Footer() {
 
           {/* Quick links */}
           <motion.div variants={itemVariants} className="lg:col-span-2">
-            <h3 className="font-display font-semibold text-white mb-4">
+            <h3 className="section-title text-white mb-4 lg:mb-5 text-lg lg:text-xl">
               Quick Links
             </h3>
             <ul className="space-y-3">
@@ -219,7 +219,7 @@ export function Footer() {
                 <li key={link.href}>
                   <AnimatedLink
                     href={link.href}
-                    className="text-gray-400 hover:text-accent-400 text-sm transition-colors"
+                    className="text-neutral-400 hover:text-accent-400 text-sm lg:text-base transition-colors"
                   >
                     {link.name}
                   </AnimatedLink>
@@ -230,10 +230,10 @@ export function Footer() {
 
           {/* Newsletter */}
           <motion.div variants={itemVariants} className="lg:col-span-3">
-            <h3 className="font-display font-semibold text-white mb-4">
+            <h3 className="section-title text-white mb-4 lg:mb-5 text-lg lg:text-xl">
               Newsletter
             </h3>
-            <p className="text-sm text-gray-400 mb-4">
+            <p className="text-sm lg:text-base text-neutral-400 mb-4">
               Subscribe for updates and exclusive offers.
             </p>
             <form onSubmit={handleSubscribe} className="space-y-3">
@@ -243,7 +243,7 @@ export function Footer() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
-                  className="w-full px-4 py-3 pr-12 rounded-xl bg-gray-800/80 border border-gray-700/50 text-white placeholder-gray-500 focus:ring-2 focus:ring-accent-500/50 focus:border-accent-500/50 transition-all"
+                  className="w-full px-4 py-3 lg:py-3.5 pr-12 rounded-xl lg:rounded-2xl bg-neutral-800/80 dark:bg-neutral-800/60 border border-neutral-700/50 text-white placeholder-neutral-500 focus:ring-2 focus:ring-accent-500/50 focus:border-accent-500/50 transition-all"
                 />
                 <motion.button
                   type="submit"
@@ -264,29 +264,29 @@ export function Footer() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="mt-16 pt-8 border-t border-gray-800/80 flex flex-col md:flex-row justify-between items-center gap-4"
+          className="mt-16 lg:mt-20 pt-8 lg:pt-10 border-t border-neutral-800/80 flex flex-col md:flex-row justify-between items-center gap-4"
         >
-          <p className="text-sm text-gray-500">
+          <p className="text-sm lg:text-base text-neutral-500">
             © {new Date().getFullYear()} 233Plug. All rights reserved.
           </p>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6 lg:gap-8">
             <Link
               href="/terms"
-              className="text-sm text-gray-500 hover:text-gray-400 transition"
+              className="text-sm lg:text-base text-neutral-500 hover:text-neutral-400 transition"
             >
               Terms
             </Link>
             <Link
               href="/privacy"
-              className="text-sm text-gray-500 hover:text-gray-400 transition"
+              className="text-sm lg:text-base text-neutral-500 hover:text-neutral-400 transition"
             >
               Privacy
             </Link>
             <motion.button
               onClick={scrollToTop}
-              whileHover={{ scale: 1.1, y: -2 }}
+              whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-800/80 text-gray-400 hover:text-accent-400 hover:bg-gray-800 transition"
+              className="flex items-center gap-2 px-4 py-2.5 lg:px-5 lg:py-3 rounded-xl bg-neutral-800/80 text-neutral-400 hover:text-accent-400 hover:bg-neutral-800 transition"
             >
               <ArrowUp className="w-4 h-4" />
               <span className="text-sm font-medium">Back to top</span>
