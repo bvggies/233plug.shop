@@ -21,11 +21,14 @@ type CouponResult = {
   expiry: string | null;
   usage_limit: number | null;
   used_count: number;
+  is_active: boolean;
+  max_uses_per_user: number | null;
 };
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, totalPrice, clearCart } = useCartStore();
+  const [mounted, setMounted] = useState(false);
+  const { items, clearCart } = useCartStore();
   const [paymentMethod, setPaymentMethod] = useState<"paystack" | "stripe" | "wallet">("paystack");
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<{ id: string } | null>(null);
@@ -44,6 +47,12 @@ export default function CheckoutPage() {
     phone: string | null;
   } | null>(null);
   const supabase = createClient();
+  const currency = useCurrencyStore((s) => s.currency);
+  const convert = useCurrencyStore((s) => s.convert);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null));
@@ -82,20 +91,24 @@ export default function CheckoutPage() {
     })();
   }, [user, supabase]);
 
-  const subtotal = totalPrice();
+  // Convert cart to GHS for order/payment (orders are stored in GHS). Use defaults until mounted to avoid hydration mismatch.
+  const subtotalInGhs = mounted
+    ? items.reduce(
+        (sum, i) => sum + convert(i.price * i.quantity, i.product?.currency ?? "GHS", "GHS"),
+        0
+      )
+    : 0;
   const discountAmount = appliedCoupon
     ? appliedCoupon.discount_type === "percent"
-      ? (subtotal * appliedCoupon.value) / 100
-      : Math.min(appliedCoupon.value, subtotal)
+      ? (subtotalInGhs * appliedCoupon.value) / 100
+      : Math.min(appliedCoupon.value, subtotalInGhs)
     : 0;
-  const total = Math.max(0, subtotal - discountAmount);
-  const canUseWallet = walletBalance >= total;
-  const displaySubtotal = useDisplayPrice(subtotal, "GHS");
+  const totalInGhs = Math.max(0, subtotalInGhs - discountAmount);
+  const canUseWallet = walletBalance >= totalInGhs;
+  const displaySubtotal = useDisplayPrice(subtotalInGhs, "GHS");
   const displayDiscount = useDisplayPrice(discountAmount, "GHS");
-  const displayTotal = useDisplayPrice(total, "GHS");
+  const displayTotal = useDisplayPrice(totalInGhs, "GHS");
   const displayWallet = useDisplayPrice(walletBalance, "GHS");
-  const currency = useCurrencyStore((s) => s.currency);
-  const convert = useCurrencyStore((s) => s.convert);
 
   const applyCoupon = async () => {
     const code = couponCode.trim().toUpperCase();
@@ -106,9 +119,10 @@ export default function CheckoutPage() {
     setApplying(true);
     setCouponError("");
     try {
+      const { data: sessionUser } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from("coupons")
-        .select("id, code, discount_type, value, min_order, expiry, usage_limit, used_count")
+        .select("id, code, discount_type, value, min_order, expiry, usage_limit, used_count, is_active, max_uses_per_user")
         .ilike("code", code)
         .single();
       if (error || !data) {
@@ -116,15 +130,30 @@ export default function CheckoutPage() {
         return;
       }
       const c = data as CouponResult;
+      if (c.is_active === false) {
+        setCouponError("This coupon is not active");
+        return;
+      }
       if (c.expiry && new Date(c.expiry) < new Date()) {
         setCouponError("Coupon has expired");
         return;
       }
-      if (c.usage_limit != null && c.used_count >= c.usage_limit) {
+      if (c.usage_limit != null && c.usage_limit > 0 && c.used_count >= c.usage_limit) {
         setCouponError("Coupon usage limit reached");
         return;
       }
-      if (subtotal < c.min_order) {
+      if (c.max_uses_per_user != null && c.max_uses_per_user > 0 && sessionUser?.user?.id) {
+        const { count, error: countErr } = await supabase
+          .from("orders")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", sessionUser.user.id)
+          .eq("coupon_id", c.id);
+        if (!countErr && count != null && count >= c.max_uses_per_user) {
+          setCouponError("You have already used this coupon the maximum number of times");
+          return;
+        }
+      }
+      if (subtotalInGhs < c.min_order) {
         const minDisplay = currency === "GHS" ? c.min_order : convert(c.min_order, "GHS", currency);
         setCouponError(`Minimum order of ${formatPrice(minDisplay, currency)} required`);
         return;
@@ -163,7 +192,7 @@ export default function CheckoutPage() {
         .insert({
           user_id: u.id,
           status: "pending",
-          total_price: total,
+          total_price: totalInGhs,
           currency: "GHS",
           coupon_id: appliedCoupon?.id || null,
           discount_amount: discountAmount || 0,
@@ -184,14 +213,14 @@ export default function CheckoutPage() {
       );
 
       if (paymentMethod === "wallet" && canUseWallet) {
-        const newBalance = walletBalance - total;
+        const newBalance = walletBalance - totalInGhs;
         await supabase.from("profiles").update({ wallet_balance: newBalance }).eq("id", u.id);
         if (appliedCoupon) {
           await supabase.from("coupons").update({ used_count: (appliedCoupon.used_count ?? 0) + 1 }).eq("id", appliedCoupon.id);
         }
         await supabase.from("wallet_transactions").insert({
           user_id: u.id,
-          amount: -total,
+          amount: -totalInGhs,
           type: "debit",
           reference_id: order.id,
         });
@@ -202,7 +231,7 @@ export default function CheckoutPage() {
         await supabase.from("payments").insert({
           user_id: u.id,
           order_id: order.id,
-          amount: total,
+          amount: totalInGhs,
           currency: "GHS",
           payment_method: "wallet",
           status: "completed",
@@ -219,7 +248,7 @@ export default function CheckoutPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: u.email,
-            amount: Math.round(total * 100),
+            amount: Math.round(totalInGhs * 100),
             orderId: order.id,
           }),
         });
@@ -232,7 +261,7 @@ export default function CheckoutPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             orderId: order.id,
-            amount: total,
+            amount: totalInGhs,
             items,
             discountAmount: discountAmount,
           }),
@@ -247,6 +276,15 @@ export default function CheckoutPage() {
       setLoading(false);
     }
   };
+
+  if (!mounted) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        <div className="h-8 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-8" />
+        <div className="h-96 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse" />
+      </div>
+    );
+  }
 
   if (items.length === 0 && !loading) {
     return (
@@ -393,7 +431,7 @@ export default function CheckoutPage() {
               </div>
             )}
             <motion.div
-              key={total}
+              key={totalInGhs}
               initial={{ opacity: 0.7, scale: 0.99 }}
               animate={{ opacity: 1, scale: 1 }}
               className="flex justify-between font-semibold text-xl pt-3 border-t border-neutral-100 dark:border-[var(--surface-border)]"

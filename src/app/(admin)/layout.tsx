@@ -21,6 +21,7 @@ import {
   Menu,
   Users,
   MapPin,
+  Star,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Logo } from "@/components/ui/Logo";
@@ -55,6 +56,7 @@ const navGroups = [
       { href: "/admin/shipments", label: "Shipments", icon: Truck },
       { href: "/admin/shipping-zones", label: "Shipping zones", icon: MapPin },
       { href: "/admin/coupons", label: "Coupons", icon: Ticket },
+      { href: "/admin/reviews", label: "Reviews", icon: Star },
     ],
   },
 ];

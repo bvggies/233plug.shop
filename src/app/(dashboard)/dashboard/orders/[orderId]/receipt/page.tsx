@@ -15,6 +15,7 @@ type OrderRow = {
   currency: string;
   discount_amount: number | null;
   created_at: string;
+  tracking_code: string | null;
 };
 
 type OrderItemRow = {
@@ -58,7 +59,7 @@ export default function OrderReceiptPage() {
         }
         const { data: orderData, error: orderError } = await supabase
           .from("orders")
-          .select("id, status, total_price, currency, discount_amount, created_at")
+          .select("id, status, total_price, currency, discount_amount, created_at, tracking_code")
           .eq("id", orderId)
           .eq("user_id", user.id)
           .single();

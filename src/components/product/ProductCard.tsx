@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { ShoppingCart, Heart } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
 import { useDisplayPrice } from "@/hooks/useDisplayPrice";
+import { getProductEffectivePrice } from "@/lib/utils";
 import type { Product } from "@/types";
 import { toast } from "sonner";
 
@@ -16,7 +17,15 @@ interface ProductCardProps {
 
 export function ProductCard({ product, compact }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem);
-  const displayPrice = useDisplayPrice(product.price, product.currency);
+  const basePrice = product.price;
+  const effectivePrice = getProductEffectivePrice(
+    basePrice,
+    product.discount_type ?? null,
+    product.discount_value ?? null
+  );
+  const hasDiscount = effectivePrice < basePrice;
+  const displayPrice = useDisplayPrice(effectivePrice, product.currency);
+  const displayOriginalPrice = useDisplayPrice(basePrice, product.currency);
   const image = product.images?.[0];
   const categoryLabel = product.category?.name ?? null;
 
@@ -25,7 +34,7 @@ export function ProductCard({ product, compact }: ProductCardProps) {
     addItem({
       product_id: product.id,
       quantity: 1,
-      price: product.price,
+      price: effectivePrice,
       product,
     });
     toast.success("Added to cart");
@@ -100,9 +109,14 @@ export function ProductCard({ product, compact }: ProductCardProps) {
 
           {/* Bottom: price + add to cart - anchored to bottom */}
           <div className="flex items-center justify-between gap-2 flex-wrap mt-auto pt-2">
-            <p className={`font-bold text-primary-600 dark:text-primary-400 ${compact ? "text-sm" : "text-lg"}`}>
+            <div className={`font-bold text-primary-600 dark:text-primary-400 ${compact ? "text-sm" : "text-lg"}`}>
+              {hasDiscount && (
+                <span className="line-through text-neutral-500 dark:text-neutral-400 font-normal text-sm mr-1.5">
+                  {displayOriginalPrice}
+                </span>
+              )}
               {displayPrice}
-            </p>
+            </div>
             <motion.button
               onClick={handleAddToCart}
               disabled={product.stock === 0}

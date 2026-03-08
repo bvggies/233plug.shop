@@ -16,8 +16,14 @@ type Notification = { id: string; message: string; read: boolean; created_at: st
 export function Header() {
   const [open, setOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
   const totalItems = useCartStore((s) => s.totalItems());
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const supabase = createClient();
   const [user, setUser] = useState<{ id?: string; email?: string } | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -57,7 +63,8 @@ export function Header() {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/shop", label: "Shop" },
-    { href: "/dashboard", label: "Tracking" },
+    { href: "/track", label: "Track" },
+    { href: "/dashboard", label: "Account" },
     { href: "/cart", label: "Cart" },
   ];
 
@@ -162,7 +169,7 @@ export function Header() {
               aria-label="Cart"
             >
               <ShoppingCart className="w-5 h-5" />
-              {totalItems > 0 && (
+              {mounted && totalItems > 0 && (
                 <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] flex items-center justify-center bg-accent-500 text-white text-[10px] font-bold rounded-full">
                   {totalItems > 99 ? "99+" : totalItems}
                 </span>

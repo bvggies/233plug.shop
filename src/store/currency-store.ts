@@ -76,8 +76,9 @@ export const useCurrencyStore = create<CurrencyState>()(
       },
 
       isReady: () => {
-        const { currency, quotes, ratesFetchedAt } = get();
+        const { currency, quotes } = get();
         if (currency === "GHS") return true;
+        if (currency === "USD") return true; // source currency, no rate needed
         const usdGhs = quotes["USDGHS"];
         const targetKey = "USD" + currency;
         const targetRate = quotes[targetKey];

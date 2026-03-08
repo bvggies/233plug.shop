@@ -26,6 +26,7 @@ const categories = [
 const links = [
   { name: "About Us", href: "/about" },
   { name: "Contact", href: "/contact" },
+  { name: "Track order", href: "/track" },
   { name: "FAQ", href: "/faq" },
   { name: "Shipping Policy", href: "/shipping" },
   { name: "Refunds & Returns", href: "/refunds" },

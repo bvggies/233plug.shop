@@ -1,8 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { formatPrice, formatDateTime } from "@/lib/utils";
-import { Printer, Download } from "lucide-react";
+import { Printer, Download, Truck } from "lucide-react";
 import { toast } from "sonner";
 
 export type ReceiptOrderItem = {
@@ -30,6 +31,7 @@ export type OrderReceiptProps = {
     currency: string;
     discount_amount?: number | null;
     created_at: string;
+    tracking_code?: string | null;
   };
   items: ReceiptOrderItem[];
   payment: ReceiptPayment | null;
@@ -204,6 +206,18 @@ export function OrderReceipt({
               {order.status}
             </span>
           </div>
+          {order.tracking_code && (
+            <div className="flex justify-between text-sm items-center gap-2 pt-1.5">
+              <span className="text-neutral-500 dark:text-neutral-400">Tracking code</span>
+              <Link
+                href={`/track?code=${encodeURIComponent(order.tracking_code)}`}
+                className="font-mono font-semibold text-primary-600 dark:text-primary-400 hover:underline inline-flex items-center gap-1"
+              >
+                {order.tracking_code}
+                <Truck className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          )}
         </div>
 
         <div className="receipt-items px-6 py-4 border-b-2 border-dashed border-neutral-200 dark:border-[var(--surface-border)]">

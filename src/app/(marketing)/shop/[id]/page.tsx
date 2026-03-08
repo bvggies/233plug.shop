@@ -22,7 +22,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { useCartStore } from "@/store/cart-store";
 import { useDisplayPrice } from "@/hooks/useDisplayPrice";
-import { formatDate } from "@/lib/utils";
+import { formatDate, getProductEffectivePrice } from "@/lib/utils";
 import { toast } from "sonner";
 import { ProductCard } from "@/components/product/ProductCard";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -33,8 +33,13 @@ export default function ProductDetailPage() {
   const id = params.id as string;
   const [product, setProduct] = useState<Product | null>(null);
   const [related, setRelated] = useState<Product[]>([]);
-  const [reviews, setReviews] = useState<{ id: string; rating: number; comment: string | null; order_id: string | null; created_at: string }[]>([]);
+  const [reviews, setReviews] = useState<{ id: string; user_id: string; rating: number; comment: string | null; order_id: string | null; created_at: string }[]>([]);
   const [reviewSort, setReviewSort] = useState<"newest" | "highest">("newest");
+  const [user, setUser] = useState<{ id: string } | null>(null);
+  const [myReview, setMyReview] = useState<{ id: string; rating: number; comment: string | null; order_id: string | null; created_at: string } | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [inWishlist, setInWishlist] = useState(false);
   const [loading, setLoading] = useState(true);
   const [imageIndex, setImageIndex] = useState(0);
@@ -43,10 +48,16 @@ export default function ProductDetailPage() {
   const [activeTab, setActiveTab] = useState<"description" | "shipping" | "reviews">("description");
   const supabase = createClient();
   const addItem = useCartStore((s) => s.addItem);
-  const displayPriceForHook = product
+  const basePriceForHook = product
     ? (selectedVariant ? product.price + (selectedVariant.price_adjustment ?? 0) : product.price)
     : 0;
-  const productPriceDisplay = useDisplayPrice(displayPriceForHook, product?.currency ?? "GHS");
+  const effectivePriceForHook =
+    product && basePriceForHook > 0
+      ? getProductEffectivePrice(basePriceForHook, product.discount_type ?? null, product.discount_value ?? null)
+      : 0;
+  const productPriceDisplay = useDisplayPrice(effectivePriceForHook, product?.currency ?? "GHS");
+  const hasDiscount = product && effectivePriceForHook < basePriceForHook;
+  const productOriginalPriceDisplay = useDisplayPrice(basePriceForHook, product?.currency ?? "GHS");
 
   useEffect(() => {
     async function load() {
@@ -70,14 +81,24 @@ export default function ProductDetailPage() {
         }
         const { data: reviewData } = await supabase
           .from("reviews")
-          .select("id, rating, comment, order_id, created_at")
+          .select("id, user_id, rating, comment, order_id, created_at")
           .eq("product_id", id)
           .order("created_at", { ascending: false });
         setReviews((reviewData ?? []) as typeof reviews);
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: w } = await supabase.from("wishlists").select("id").eq("user_id", user.id).eq("product_id", id).single();
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        setUser(authUser ? { id: authUser.id } : null);
+        if (authUser) {
+          const { data: myRev } = await supabase
+            .from("reviews")
+            .select("id, rating, comment, order_id, created_at")
+            .eq("product_id", id)
+            .eq("user_id", authUser.id)
+            .maybeSingle();
+          setMyReview(myRev as typeof myReview);
+          const { data: w } = await supabase.from("wishlists").select("id").eq("user_id", authUser.id).eq("product_id", id).single();
           setInWishlist(!!w);
+        } else {
+          setMyReview(null);
         }
       } finally {
         setLoading(false);
@@ -108,7 +129,6 @@ export default function ProductDetailPage() {
   };
 
   const toggleWishlist = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       toast.error("Sign in to save items");
       return;
@@ -142,6 +162,63 @@ export default function ProductDetailPage() {
     }
   };
 
+  const loadReviews = async () => {
+    const { data: reviewData } = await supabase
+      .from("reviews")
+      .select("id, user_id, rating, comment, order_id, created_at")
+      .eq("product_id", id)
+      .order("created_at", { ascending: false });
+    setReviews((reviewData ?? []) as typeof reviews);
+    if (user) {
+      const { data: myRev } = await supabase
+        .from("reviews")
+        .select("id, rating, comment, order_id, created_at")
+        .eq("product_id", id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      setMyReview(myRev as typeof myReview);
+    }
+  };
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !product) return;
+    if (reviewRating < 1 || reviewRating > 5) {
+      toast.error("Please select a rating");
+      return;
+    }
+    setReviewSubmitting(true);
+    try {
+      let orderId: string | null = null;
+      const { data: orderRow } = await supabase
+        .from("order_items")
+        .select("order_id")
+        .eq("product_id", id)
+        .limit(1)
+        .maybeSingle();
+      if (orderRow) {
+        const { data: ord } = await supabase.from("orders").select("id").eq("id", (orderRow as { order_id: string }).order_id).eq("user_id", user.id).maybeSingle();
+        if (ord) orderId = (ord as { id: string }).id;
+      }
+      const { error } = await supabase.from("reviews").insert({
+        user_id: user.id,
+        product_id: id,
+        order_id: orderId,
+        rating: reviewRating,
+        comment: reviewComment.trim() || null,
+      });
+      if (error) throw error;
+      toast.success("Review submitted");
+      setReviewComment("");
+      setReviewRating(5);
+      await loadReviews();
+    } catch {
+      toast.error("Failed to submit review");
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -171,9 +248,10 @@ export default function ProductDetailPage() {
   }
 
   const variants = (product as Product & { variants?: { id: string; size: string | null; color: string | null; price_adjustment: number; stock: number }[] }).variants ?? [];
-  const displayPrice = selectedVariant
+  const basePrice = selectedVariant
     ? product.price + (selectedVariant.price_adjustment ?? 0)
     : product.price;
+  const displayPrice = getProductEffectivePrice(basePrice, product.discount_type ?? null, product.discount_value ?? null);
   const displayStock = selectedVariant ? selectedVariant.stock : product.stock;
   const images = product.images?.length ? product.images : [null];
   const currentImage = images[imageIndex];
@@ -299,6 +377,11 @@ export default function ProductDetailPage() {
           </h1>
 
           <p className="text-2xl text-primary-600 font-semibold mb-4">
+            {hasDiscount && (
+              <span className="line-through text-neutral-500 dark:text-neutral-400 font-normal text-lg mr-2">
+                {productOriginalPriceDisplay}
+              </span>
+            )}
             {productPriceDisplay}
           </p>
 
@@ -512,6 +595,68 @@ export default function ProductDetailPage() {
 
         {activeTab === "reviews" && (
           <div className="space-y-6">
+            {/* Write review: only for logged-in users */}
+            {!user ? (
+              <div className="p-4 rounded-xl border border-gray-200 bg-gray-50 dark:bg-gray-800/50 text-center">
+                <p className="text-neutral-600 dark:text-neutral-400 mb-3">Sign in to write a review.</p>
+                <Link
+                  href={`/login?redirect=${encodeURIComponent(`/shop/${id}`)}`}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 transition"
+                >
+                  Sign in
+                </Link>
+              </div>
+            ) : myReview ? (
+              <div className="p-4 rounded-xl border-2 border-primary-200 bg-primary-50/50 dark:bg-primary-900/20">
+                <p className="font-medium text-neutral-900 dark:text-neutral-100 mb-2">Your review</p>
+                <div className="flex gap-0.5 mb-2">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Star key={i} className={`w-4 h-4 ${i <= myReview.rating ? "text-amber-500 fill-amber-500" : "text-neutral-300 dark:text-neutral-600"}`} />
+                  ))}
+                </div>
+                {myReview.comment && <p className="text-neutral-700 dark:text-neutral-300 text-sm">{myReview.comment}</p>}
+                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">{formatDate(myReview.created_at)}</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmitReview} className="p-4 rounded-xl border border-gray-200 bg-gray-50 dark:bg-gray-800/50 space-y-4">
+                <p className="font-medium text-neutral-900 dark:text-neutral-100">Write a review</p>
+                <div>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-2">Rating</p>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setReviewRating(i)}
+                        className="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-600 transition"
+                        aria-label={`${i} star${i > 1 ? "s" : ""}`}
+                      >
+                        <Star className={`w-8 h-8 ${i <= reviewRating ? "text-amber-500 fill-amber-500" : "text-neutral-300 dark:text-neutral-600"}`} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="review-comment" className="text-sm text-neutral-600 dark:text-neutral-400 block mb-2">Comment (optional)</label>
+                  <textarea
+                    id="review-comment"
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                    placeholder="Share your experience..."
+                    rows={3}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={reviewSubmitting}
+                  className="px-4 py-2 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 disabled:opacity-50 transition"
+                >
+                  {reviewSubmitting ? "Submitting..." : "Submit review"}
+                </button>
+              </form>
+            )}
+
             <div className="flex items-center justify-between flex-wrap gap-4">
               <p className="text-neutral-600 dark:text-neutral-400">{reviews.length} review{reviews.length !== 1 ? "s" : ""}</p>
               <div className="flex gap-2">

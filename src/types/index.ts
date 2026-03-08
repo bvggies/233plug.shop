@@ -109,6 +109,8 @@ export interface Product {
   currency: string;
   stock: number;
   sku: string | null;
+  discount_type?: "percent" | "fixed" | null;
+  discount_value?: number | null;
   created_at: string;
   updated_at: string;
   is_trending?: boolean;
@@ -137,6 +139,7 @@ export interface Order {
   discount_amount?: number;
   shipment_batch_id: string | null;
   shipping_zone_id: string | null;
+  tracking_code: string;
   created_at: string;
   updated_at: string;
   items?: OrderItem[];
@@ -157,6 +160,7 @@ export interface Request {
   quote_response_message: string | null;
   counter_price: number | null;
   shipment_batch_id: string | null;
+  tracking_code: string;
   created_at: string;
   updated_at: string;
 }

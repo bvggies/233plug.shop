@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useCurrencyStore } from "@/store/currency-store";
 import { formatPrice } from "@/lib/utils";
 
@@ -9,19 +9,25 @@ const DEFAULT_STORE_CURRENCY = "GHS";
 /**
  * Converts amount from store currency (e.g. GHS) to the user's selected display currency
  * and returns a formatted string. Uses real-time rates from ExchangeRate.host.
- * If rates aren't loaded or same currency, shows amount in original currency.
+ * Before mount we show amount in fromCurrency to avoid hydration mismatch with persisted store.
  */
 export function useDisplayPrice(amount: number, fromCurrency: string = DEFAULT_STORE_CURRENCY): string {
+  const [mounted, setMounted] = useState(false);
   const currency = useCurrencyStore((s) => s.currency);
+  const quotes = useCurrencyStore((s) => s.quotes);
   const convert = useCurrencyStore((s) => s.convert);
   const isReady = useCurrencyStore((s) => s.isReady);
   const fetchRates = useCurrencyStore((s) => s.fetchRates);
 
   useEffect(() => {
-    fetchRates();
-  }, [fetchRates]);
+    setMounted(true);
+  }, []);
 
-  if (fromCurrency === currency || !isReady()) {
+  useEffect(() => {
+    if (mounted) fetchRates();
+  }, [mounted, fetchRates]);
+
+  if (!mounted || fromCurrency === currency || !isReady()) {
     return formatPrice(amount, fromCurrency);
   }
   const converted = convert(amount, fromCurrency, currency);
@@ -44,11 +50,19 @@ export function DisplayPrice({
 
 /**
  * Returns the numeric value in display currency (for calculations or custom formatting).
+ * Before mount returns amount unchanged to avoid hydration mismatch.
  */
 export function useConvertedAmount(amount: number, fromCurrency: string = DEFAULT_STORE_CURRENCY): number {
+  const [mounted, setMounted] = useState(false);
   const currency = useCurrencyStore((s) => s.currency);
+  const quotes = useCurrencyStore((s) => s.quotes);
   const convert = useCurrencyStore((s) => s.convert);
   const isReady = useCurrencyStore((s) => s.isReady);
-  if (fromCurrency === currency || !isReady()) return amount;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || fromCurrency === currency || !isReady()) return amount;
   return convert(amount, fromCurrency, currency);
 }

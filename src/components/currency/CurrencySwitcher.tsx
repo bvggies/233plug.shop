@@ -13,8 +13,11 @@ const LABELS: Record<DisplayCurrency, string> = {
   GBP: "GBP",
 };
 
+const DEFAULT_CURRENCY: DisplayCurrency = "GHS";
+
 export function CurrencySwitcher({ className }: { className?: string }) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const currency = useCurrencyStore((s) => s.currency);
   const setCurrency = useCurrencyStore((s) => s.setCurrency);
@@ -22,8 +25,12 @@ export function CurrencySwitcher({ className }: { className?: string }) {
   const ratesError = useCurrencyStore((s) => s.ratesError);
 
   useEffect(() => {
-    fetchRates();
-  }, [fetchRates]);
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) fetchRates();
+  }, [mounted, fetchRates]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -43,7 +50,7 @@ export function CurrencySwitcher({ className }: { className?: string }) {
         aria-haspopup="listbox"
         aria-label="Select currency"
       >
-        <span>{LABELS[currency]}</span>
+        <span>{LABELS[mounted ? currency : DEFAULT_CURRENCY]}</span>
         <ChevronDown className={cn("w-4 h-4 transition-transform", open && "rotate-180")} />
       </button>
       {open && (
@@ -52,7 +59,7 @@ export function CurrencySwitcher({ className }: { className?: string }) {
           className="absolute right-0 top-full mt-1 min-w-[120px] py-1 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 z-50"
         >
           {DISPLAY_CURRENCIES.map((c) => (
-            <li key={c} role="option" aria-selected={currency === c}>
+            <li key={c} role="option" aria-selected={(mounted ? currency : DEFAULT_CURRENCY) === c}>
               <button
                 type="button"
                 onClick={() => {
@@ -61,7 +68,7 @@ export function CurrencySwitcher({ className }: { className?: string }) {
                 }}
                 className={cn(
                   "w-full text-left px-4 py-2.5 text-sm font-medium transition-colors",
-                  currency === c
+                  (mounted ? currency : DEFAULT_CURRENCY) === c
                     ? "bg-primary-500/10 text-primary-600 dark:text-primary-400"
                     : "text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800"
                 )}

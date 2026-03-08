@@ -16,6 +16,8 @@ type Coupon = {
   expiry: string | null;
   usage_limit: number | null;
   used_count: number;
+  max_uses_per_user: number | null;
+  is_active: boolean;
   created_at: string;
 };
 
@@ -30,6 +32,8 @@ export default function AdminCouponsPage() {
   const [minOrder, setMinOrder] = useState("");
   const [expiry, setExpiry] = useState("");
   const [usageLimit, setUsageLimit] = useState("");
+  const [maxPerUser, setMaxPerUser] = useState("");
+  const [isActive, setIsActive] = useState(true);
   const [saving, setSaving] = useState(false);
   const supabase = createClient();
 
@@ -56,6 +60,8 @@ export default function AdminCouponsPage() {
     setMinOrder("0");
     setExpiry("");
     setUsageLimit("");
+    setMaxPerUser("");
+    setIsActive(true);
   };
 
   const openEdit = (c: Coupon) => {
@@ -67,6 +73,8 @@ export default function AdminCouponsPage() {
     setMinOrder(String(c.min_order ?? 0));
     setExpiry(c.expiry ? c.expiry.slice(0, 16) : "");
     setUsageLimit(c.usage_limit != null ? String(c.usage_limit) : "");
+    setMaxPerUser(c.max_uses_per_user != null ? String(c.max_uses_per_user) : "");
+    setIsActive(c.is_active);
   };
 
   const save = async () => {
@@ -81,13 +89,17 @@ export default function AdminCouponsPage() {
     }
     setSaving(true);
     try {
+      const usageVal = usageLimit.trim() ? parseInt(usageLimit, 10) : null;
+      const maxPerUserVal = maxPerUser.trim() ? parseInt(maxPerUser, 10) : null;
       const payload = {
         code: code.trim().toUpperCase(),
         discount_type: discountType,
         value: val,
         min_order: parseFloat(minOrder) || 0,
         expiry: expiry ? new Date(expiry).toISOString() : null,
-        usage_limit: usageLimit ? parseInt(usageLimit, 10) : null,
+        usage_limit: usageVal != null && usageVal > 0 ? usageVal : null,
+        max_uses_per_user: maxPerUserVal != null && maxPerUserVal > 0 ? maxPerUserVal : null,
+        is_active: isActive,
       };
       if (editing) {
         const { error } = await supabase.from("coupons").update(payload).eq("id", editing.id);
@@ -115,7 +127,8 @@ export default function AdminCouponsPage() {
   };
 
   const isExpired = (c: Coupon) => c.expiry && new Date(c.expiry) < new Date();
-  const isExhausted = (c: Coupon) => c.usage_limit != null && c.used_count >= c.usage_limit;
+  const isExhausted = (c: Coupon) => c.usage_limit != null && c.usage_limit > 0 && c.used_count >= c.usage_limit;
+  const isInactive = (c: Coupon) => !c.is_active || isExpired(c) || isExhausted(c);
 
   if (loading) {
     return (
@@ -149,22 +162,26 @@ export default function AdminCouponsPage() {
         <div className="bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/50">
-                <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Code</th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Discount</th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Min order</th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Usage</th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Expiry</th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Actions</th>
-              </tr>
+                <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Code</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Discount</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Min order</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Usage</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Per user</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Expiry</th>
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Actions</th>
+                </tr>
             </thead>
             <tbody>
               {coupons.map((c) => (
                 <tr key={c.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50/50">
                   <td className="px-6 py-4">
                     <code className="font-mono font-semibold text-primary-600">{c.code}</code>
-                    {(isExpired(c) || isExhausted(c)) && (
+                    {isInactive(c) && (
                       <span className="ml-2 text-xs text-amber-600">(inactive)</span>
+                    )}
+                    {c.is_active && !isExpired(c) && !isExhausted(c) && (
+                      <span className="ml-2 text-xs text-green-600">(active)</span>
                     )}
                   </td>
                   <td className="px-6 py-4 text-sm">
@@ -172,7 +189,10 @@ export default function AdminCouponsPage() {
                   </td>
                   <td className="px-6 py-4 text-sm">GHS {c.min_order}</td>
                   <td className="px-6 py-4 text-sm">
-                    {c.used_count}{c.usage_limit != null ? ` / ${c.usage_limit}` : ""}
+                    {c.used_count}{c.usage_limit != null && c.usage_limit > 0 ? ` / ${c.usage_limit}` : ""}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {c.max_uses_per_user != null ? c.max_uses_per_user : "∞"}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {c.expiry ? formatDate(c.expiry) : "—"}
@@ -237,12 +257,25 @@ export default function AdminCouponsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Usage limit (optional)</label>
                 <input
                   type="number"
-                  min="0"
+                  min="1"
                   value={usageLimit}
                   onChange={(e) => setUsageLimit(e.target.value)}
                   placeholder="Unlimited"
                   className="w-full px-4 py-2 rounded-xl border border-gray-200"
                 />
+                <p className="text-xs text-gray-500 mt-0.5">Total uses across all customers. Leave empty for unlimited.</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Max uses per user (optional)</label>
+                <input
+                  type="number"
+                  min="1"
+                  value={maxPerUser}
+                  onChange={(e) => setMaxPerUser(e.target.value)}
+                  placeholder="Unlimited"
+                  className="w-full px-4 py-2 rounded-xl border border-gray-200"
+                />
+                <p className="text-xs text-gray-500 mt-0.5">How many times each customer can use this code. Leave empty for unlimited.</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Expiry (optional)</label>
@@ -253,6 +286,15 @@ export default function AdminCouponsPage() {
                   className="w-full px-4 py-2 rounded-xl border border-gray-200"
                 />
               </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
+                  className="rounded border-gray-300 text-primary-600"
+                />
+                <span className="text-sm font-medium text-gray-700">Active (coupon can be applied)</span>
+              </label>
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setModal(null)} className="flex-1 py-2 border border-gray-200 rounded-xl">Cancel</button>

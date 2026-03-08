@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -7,12 +8,43 @@ import { motion } from "framer-motion";
 import { ShoppingCart, Minus, Plus, Trash2 } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
 import { useDisplayPrice, DisplayPrice } from "@/hooks/useDisplayPrice";
+import { useCurrencyStore } from "@/store/currency-store";
+import { formatPrice } from "@/lib/utils";
 
 export default function CartPage() {
   const router = useRouter();
-  const { items, totalPrice, updateQuantity, removeItem } = useCartStore();
-  const total = totalPrice();
-  const displayTotal = useDisplayPrice(total, "GHS");
+  const [mounted, setMounted] = useState(false);
+  const { items, updateQuantity, removeItem } = useCartStore();
+  const currency = useCurrencyStore((s) => s.currency);
+  const quotes = useCurrencyStore((s) => s.quotes);
+  const convert = useCurrencyStore((s) => s.convert);
+  const fetchRates = useCurrencyStore((s) => s.fetchRates);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) fetchRates();
+  }, [mounted, fetchRates]);
+
+  // Total in user's display currency (avoid using persisted store until mounted to prevent hydration mismatch)
+  const totalInUserCurrency = mounted
+    ? items.reduce(
+        (sum, i) => sum + convert(i.price * i.quantity, i.product?.currency ?? "GHS", currency),
+        0
+      )
+    : 0;
+  const displayTotal = formatPrice(totalInUserCurrency, mounted ? currency : "GHS");
+
+  if (!mounted) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-6" />
+        <div className="h-64 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse" />
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (

@@ -96,16 +96,24 @@ export default function RequestPage() {
           linkOrImage = urlData.publicUrl;
         }
       }
-      const { error } = await supabase.from("requests").insert({
+      const { data: newRequest, error } = await supabase.from("requests").insert({
         user_id: user.id,
         product_name: data.product_name,
         link_or_image: linkOrImage || "https://placeholder.com",
         description: data.description || null,
         budget: data.budget || null,
         status: "pending",
-      });
+      }).select("id, tracking_code").single();
       if (error) throw error;
-      toast.success("Request submitted! We'll get back to you soon.");
+      const code = (newRequest as { tracking_code?: string } | null)?.tracking_code;
+      toast.success(
+        code
+          ? `Request submitted! Track it with code: ${code}`
+          : "Request submitted! We'll get back to you soon."
+      );
+      if (code) {
+        toast.info("Track your request anytime at /track (no login needed)", { duration: 5000 });
+      }
       router.push("/dashboard/requests");
       router.refresh();
     } catch (err: unknown) {

@@ -343,6 +343,11 @@ export default function AdminRequestsPage() {
                       >
                         {r.product_name}
                       </button>
+                      {r.quote_response === "reduction_requested" && (
+                        <span className="block mt-1 text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md w-fit">
+                          Reduction requested
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {r.budget != null ? formatPrice(r.budget, "GHS") : "—"}

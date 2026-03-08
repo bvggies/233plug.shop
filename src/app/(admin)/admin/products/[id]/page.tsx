@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { formatPrice } from "@/lib/utils";
 import { Plus, Pencil, Trash2, Package } from "lucide-react";
 import type { Product, Category, ProductVariant } from "@/types";
+import { DISPLAY_CURRENCIES } from "@/store/currency-store";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -21,6 +22,7 @@ const schema = z.object({
   price: z.coerce.number().positive("Price must be positive"),
   stock: z.coerce.number().int().min(0, "Stock must be 0 or greater"),
   sku: z.string().optional().nullable(),
+  currency: z.enum(DISPLAY_CURRENCIES as unknown as [string, ...string[]]),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -33,6 +35,8 @@ export default function EditProductPage() {
   const [imagesInput, setImagesInput] = useState("");
   const [isTrending, setIsTrending] = useState(false);
   const [isHotDeal, setIsHotDeal] = useState(false);
+  const [discountType, setDiscountType] = useState<"none" | "percent" | "fixed">("none");
+  const [discountValue, setDiscountValue] = useState("");
   const [loadingProduct, setLoadingProduct] = useState(true);
   const [showVariantForm, setShowVariantForm] = useState(false);
   const [editingVariantId, setEditingVariantId] = useState<string | null>(null);
@@ -66,6 +70,7 @@ export default function EditProductPage() {
       price: 0,
       stock: 0,
       sku: "",
+      currency: "GHS",
     },
   });
 
@@ -90,10 +95,15 @@ export default function EditProductPage() {
           price: Number(p.price),
           stock: p.stock,
           sku: p.sku || "",
+          currency: (p.currency ?? "GHS") as "GHS" | "USD" | "NGN" | "EUR" | "GBP",
         });
         setImagesInput(Array.isArray(p.images) ? (p.images as string[]).join("\n") : "");
         setIsTrending(!!(p as Product & { is_trending?: boolean }).is_trending);
         setIsHotDeal(!!(p as Product & { is_hot_deal?: boolean }).is_hot_deal);
+        const dt = (p as Product & { discount_type?: string | null }).discount_type;
+        const dv = (p as Product & { discount_value?: number | null }).discount_value;
+        setDiscountType(dt === "percent" || dt === "fixed" ? dt : "none");
+        setDiscountValue(dv != null && dv > 0 ? String(dv) : "");
       } catch {
         toast.error("Product not found");
         router.push("/admin/products");
@@ -200,6 +210,21 @@ export default function EditProductPage() {
           images,
           is_trending: isTrending,
           is_hot_deal: isHotDeal,
+          currency: data.currency,
+          discount_type:
+            (discountType === "percent" || discountType === "fixed") &&
+            discountValue.trim() !== "" &&
+            !isNaN(Number(discountValue)) &&
+            Number(discountValue) > 0
+              ? discountType
+              : null,
+          discount_value:
+            (discountType === "percent" || discountType === "fixed") &&
+            discountValue.trim() !== "" &&
+            !isNaN(Number(discountValue)) &&
+            Number(discountValue) > 0
+              ? Number(discountValue)
+              : null,
         })
         .eq("id", id);
       if (error) throw error;
@@ -306,7 +331,7 @@ export default function EditProductPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price (GHS)
+                Price
               </label>
               <input
                 {...register("price")}
@@ -321,6 +346,20 @@ export default function EditProductPage() {
                   {errors.price.message}
                 </p>
               )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Currency (purchase price)
+              </label>
+              <select
+                {...register("currency")}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+              >
+                {DISPLAY_CURRENCIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-0.5">Customers see prices converted to their selected currency.</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -351,6 +390,7 @@ export default function EditProductPage() {
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
               placeholder="e.g. PERF-001"
             />
+            <p className="text-xs text-gray-500 mt-0.5">Leave empty to auto-generate (e.g. SKU-000001).</p>
           </div>
 
           <div className="flex gap-6">
@@ -362,6 +402,40 @@ export default function EditProductPage() {
               <input type="checkbox" checked={isHotDeal} onChange={(e) => setIsHotDeal(e.target.checked)} className="rounded border-gray-300 text-primary-500" />
               <span className="text-sm font-medium text-gray-700">Hot Deal</span>
             </label>
+          </div>
+
+          <div className="border-t border-gray-200 pt-6">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">Discount (optional)</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                <select
+                  value={discountType}
+                  onChange={(e) => setDiscountType(e.target.value as "none" | "percent" | "fixed")}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                >
+                  <option value="none">No discount</option>
+                  <option value="percent">Percent off</option>
+                  <option value="fixed">Fixed amount off</option>
+                </select>
+              </div>
+              {(discountType === "percent" || discountType === "fixed") && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {discountType === "percent" ? "Percent off" : "Amount off (product currency)"}
+                  </label>
+                  <input
+                    type="number"
+                    step={discountType === "percent" ? 1 : 0.01}
+                    min="0"
+                    value={discountValue}
+                    onChange={(e) => setDiscountValue(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                    placeholder={discountType === "percent" ? "20" : "0.00"}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

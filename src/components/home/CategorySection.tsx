@@ -8,6 +8,7 @@ import { ArrowRight, ShoppingCart } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useDisplayPrice, DisplayPrice } from "@/hooks/useDisplayPrice";
 import { useCartStore } from "@/store/cart-store";
+import { getProductEffectivePrice } from "@/lib/utils";
 import { toast } from "sonner";
 import type { Product } from "@/types";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -31,7 +32,8 @@ function ProductTile({
   showAddToCart?: boolean;
 }) {
   const addItem = useCartStore((s) => s.addItem);
-  const displayPrice = useDisplayPrice(product.price, product.currency);
+  const effectivePrice = getProductEffectivePrice(product.price, product.discount_type ?? null, product.discount_value ?? null);
+  const displayPrice = useDisplayPrice(effectivePrice, product.currency);
   const image = product.images?.[0];
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -39,7 +41,7 @@ function ProductTile({
     addItem({
       product_id: product.id,
       quantity: 1,
-      price: product.price,
+      price: effectivePrice,
       product,
     });
     toast.success("Added to cart");
@@ -280,7 +282,10 @@ export function CategorySection({ name, slug, layout, accent }: CategorySectionP
                       {p.name}
                     </h3>
                     <p className={`text-primary-600 font-semibold mt-0.5 ${i === 0 ? "text-sm md:text-base" : "text-xs md:text-sm"}`}>
-                      <DisplayPrice amount={p.price} currency={p.currency} />
+                      <DisplayPrice
+                        amount={getProductEffectivePrice(p.price, p.discount_type ?? null, p.discount_value ?? null)}
+                        currency={p.currency}
+                      />
                     </p>
                   </div>
                 </motion.div>
