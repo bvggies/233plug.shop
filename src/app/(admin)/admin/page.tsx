@@ -262,7 +262,7 @@ export default function AdminOverviewPage() {
           <Skeleton className="h-9 w-48 rounded mb-2" />
           <Skeleton className="h-5 w-64 rounded" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[...Array(7)].map((_, i) => (
             <Skeleton key={i} className="h-28 rounded-2xl" />
           ))}
@@ -355,24 +355,26 @@ export default function AdminOverviewPage() {
         <p className="text-gray-500 mt-1">Welcome back. Here&apos;s what&apos;s happening.</p>
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
+      {/* Stat cards - 2-column grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {statCards.map((card) => {
           const Icon = card.icon;
           return (
           <Link
             key={card.label}
             href={card.href}
-            className="group bg-white dark:bg-gray-900 rounded-2xl p-5 shadow-soft border border-gray-100 dark:border-gray-800 hover:shadow-soft-lg hover:border-gray-200 dark:hover:border-gray-700 transition-all"
+            className="group bg-white dark:bg-gray-900 rounded-2xl p-5 shadow-soft border border-gray-100 dark:border-gray-800 hover:shadow-soft-lg hover:border-gray-200 dark:hover:border-gray-700 transition-all flex flex-col min-h-[120px]"
           >
-            <div className={`w-10 h-10 rounded-xl ${card.bgLight} dark:bg-opacity-20 ${card.iconColor} flex items-center justify-center mb-3`}>
-              <Icon className="w-5 h-5" />
+            <div className="flex items-start justify-between gap-3">
+              <div className={`w-10 h-10 rounded-xl ${card.bgLight} dark:bg-opacity-20 ${card.iconColor} flex items-center justify-center flex-shrink-0`}>
+                <Icon className="w-5 h-5" />
+              </div>
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 opacity-0 group-hover:opacity-100 transition flex-shrink-0">
+                View <ArrowRight className="w-3.5 h-3.5" />
+              </span>
             </div>
-            <p className="text-2xl font-display font-bold text-gray-900 dark:text-gray-100">{card.value}</p>
+            <p className="text-2xl font-display font-bold text-gray-900 dark:text-gray-100 mt-2">{card.value}</p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{card.label}</p>
-            <span className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-primary-600 opacity-0 group-hover:opacity-100 transition">
-              View <ArrowRight className="w-3.5 h-3.5" />
-            </span>
           </Link>
           );
         })}
