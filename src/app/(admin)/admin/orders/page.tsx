@@ -7,7 +7,7 @@ import { formatPrice, formatDate } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronRight, Package } from "lucide-react";
+import { ChevronDown, ChevronRight, Package, Search } from "lucide-react";
 
 type OrderRow = {
   id: string;
@@ -50,6 +50,8 @@ export default function AdminOrdersPage() {
   const [orderItemsMap, setOrderItemsMap] = useState<Record<string, OrderItemRow[]>>({});
   const [loadingItems, setLoadingItems] = useState<Set<string>>(new Set());
   const [zoneFilter, setZoneFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [searchOrderId, setSearchOrderId] = useState("");
   const [zones, setZones] = useState<{ id: string; name: string }[]>([]);
   const [updatingZoneOrderId, setUpdatingZoneOrderId] = useState<string | null>(null);
   const supabase = createClient();
@@ -74,12 +76,14 @@ export default function AdminOrdersPage() {
         .select("id, user_id, status, total_price, currency, created_at, shipping_zone_id, shipping_zone:shipping_zones(id, name)")
         .order("created_at", { ascending: false });
       if (zoneFilter) q = q.eq("shipping_zone_id", zoneFilter);
+      if (statusFilter) q = q.eq("status", statusFilter);
+      if (searchOrderId.trim()) q = q.ilike("id", `%${searchOrderId.trim()}%`);
       const { data } = await q;
       setOrders((data as unknown as OrderRow[]) ?? []);
       setLoading(false);
     }
     load();
-  }, [supabase, zoneFilter]);
+  }, [supabase, zoneFilter, statusFilter, searchOrderId]);
 
   const reloadOrders = () => {
     let q = supabase
@@ -87,6 +91,8 @@ export default function AdminOrdersPage() {
       .select("id, user_id, status, total_price, currency, created_at, shipping_zone_id, shipping_zone:shipping_zones(id, name)")
       .order("created_at", { ascending: false });
     if (zoneFilter) q = q.eq("shipping_zone_id", zoneFilter);
+    if (statusFilter) q = q.eq("status", statusFilter);
+    if (searchOrderId.trim()) q = q.ilike("id", `%${searchOrderId.trim()}%`);
     q.then(({ data }) => setOrders((data as unknown as OrderRow[]) ?? []));
   };
 
@@ -205,7 +211,29 @@ export default function AdminOrdersPage() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 className="text-2xl font-display font-bold text-gray-900">Orders</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Order ID..."
+              value={searchOrderId}
+              onChange={(e) => setSearchOrderId(e.target.value)}
+              className="pl-8 pr-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm w-40 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            />
+          </div>
+          <label htmlFor="status-filter" className="text-sm text-gray-600 dark:text-gray-400">Status:</label>
+          <select
+            id="status-filter"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm"
+          >
+            <option value="">All statuses</option>
+            {ORDER_STATUSES.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
           <label htmlFor="zone-filter" className="text-sm text-gray-600 dark:text-gray-400">Zone:</label>
           <select
             id="zone-filter"
@@ -218,6 +246,15 @@ export default function AdminOrdersPage() {
               <option key={z.id} value={z.id}>{z.name}</option>
             ))}
           </select>
+          {(searchOrderId || statusFilter || zoneFilter) && (
+            <button
+              type="button"
+              onClick={() => { setSearchOrderId(""); setStatusFilter(""); setZoneFilter(""); }}
+              className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
+            >
+              Clear
+            </button>
+          )}
         </div>
       </div>
 

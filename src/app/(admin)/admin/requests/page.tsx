@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { toast } from "sonner";
-import { X, Send, Edit2, ShoppingCart, MessageSquare } from "lucide-react";
+import { X, Send, Edit2, ShoppingCart, MessageSquare, Search } from "lucide-react";
 
 type RequestRow = {
   id: string;
@@ -40,6 +40,8 @@ export default function AdminRequestsPage() {
   const [requests, setRequests] = useState<RequestRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [bulkStatus, setBulkStatus] = useState<string>("reviewing");
   const [bulkApplying, setBulkApplying] = useState(false);
   const [selected, setSelected] = useState<RequestRow | null>(null);
@@ -54,20 +56,26 @@ export default function AdminRequestsPage() {
   const supabase = createClient();
 
   const load = () => {
-    supabase
+    setLoading(true);
+    let q = supabase
       .from("requests")
       .select("id, user_id, product_name, link_or_image, description, budget, status, quote_price, quote_response, quote_response_message, counter_price, shipment_batch_id, created_at, updated_at")
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (!error) setRequests((data as RequestRow[]) || []);
-        setLoading(false);
-      });
+      .order("created_at", { ascending: false });
+    if (statusFilter) q = q.eq("status", statusFilter);
+    if (searchQuery.trim()) {
+      const term = `%${searchQuery.trim()}%`;
+      q = q.or(`product_name.ilike.${term},description.ilike.${term}`);
+    }
+    q.then(({ data, error }) => {
+      if (!error) setRequests((data as RequestRow[]) || []);
+      setLoading(false);
+    });
   };
 
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional single run on mount
-  }, []);
+  }, [statusFilter, searchQuery]);
 
   useEffect(() => {
     if (!selected) {
@@ -269,6 +277,38 @@ export default function AdminRequestsPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-display font-bold text-gray-900">Requests</h1>
         <p className="text-gray-500 text-sm mt-1">{requests.length} request(s)</p>
+      </div>
+
+      <div className="flex flex-wrap gap-3 mb-6">
+        <div className="relative flex-1 min-w-[180px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search product or description..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-900 placeholder-gray-400 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          />
+        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-900 text-sm"
+        >
+          <option value="">All statuses</option>
+          {REQUEST_STATUSES.map((s) => (
+            <option key={s} value={s}>{s.replace("_", " ")}</option>
+          ))}
+        </select>
+        {(searchQuery || statusFilter) && (
+          <button
+            type="button"
+            onClick={() => { setSearchQuery(""); setStatusFilter(""); }}
+            className="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50"
+          >
+            Clear filters
+          </button>
+        )}
       </div>
 
       {selectedIds.size > 0 && (

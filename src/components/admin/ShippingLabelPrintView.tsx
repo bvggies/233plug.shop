@@ -38,9 +38,17 @@ export function ShippingLabelPrintView({ batch, items, onClose, autoPrint = true
         @media print {
           body * { visibility: hidden; }
           .print-container, .print-container * { visibility: visible; }
-          .print-container { position: absolute; left: 0; top: 0; width: 100%; background: white; }
+          .print-container { position: absolute; left: 0; top: 0; width: 100%; background: white; padding: 0 !important; }
           .no-print { display: none !important; }
-          .shipping-label { break-inside: avoid; page-break-inside: avoid; }
+          .print-container .grid { display: block; }
+          .shipping-label {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            page-break-after: always;
+            margin: 0;
+            box-shadow: none;
+          }
+          .shipping-label:last-child { page-break-after: auto; }
         }
         @page { size: 4in 6in; margin: 0; }
       `}</style>

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { formatPrice, formatDateTime } from "@/lib/utils";
 import { Printer, Download, Truck } from "lucide-react";
 import { toast } from "sonner";
@@ -74,19 +75,24 @@ export function OrderReceipt({
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
+        windowWidth: printRef.current.scrollWidth,
+        windowHeight: printRef.current.scrollHeight,
       });
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({ unit: "mm", format: "a4" });
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
-      const margin = 10;
-      const imgW = pageW - margin * 2;
-      const imgH = (canvas.height * imgW) / canvas.width;
-      if (imgH > pageH - margin * 2) {
-        pdf.addImage(imgData, "PNG", margin, margin, imgW, pageH - margin * 2);
-      } else {
-        pdf.addImage(imgData, "PNG", margin, margin, imgW, imgH);
-      }
+      const margin = 12;
+      const maxW = pageW - margin * 2;
+      const maxH = pageH - margin * 2;
+      const imgW = maxW;
+      const imgH = (canvas.height * maxW) / canvas.width;
+      const scale = imgH > maxH ? maxH / imgH : 1;
+      const finalW = imgW * scale;
+      const finalH = imgH * scale;
+      const x = margin + (maxW - finalW) / 2;
+      const y = margin + (maxH - finalH) / 2;
+      pdf.addImage(imgData, "PNG", x, y, finalW, finalH);
       pdf.save(`receipt-${order.id.slice(0, 8).toUpperCase()}.pdf`);
       toast.success("Receipt downloaded");
     } catch {
@@ -98,6 +104,7 @@ export function OrderReceipt({
 
   const handlePrint = () => {
     if (!printRef.current) return;
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
     const printContent = printRef.current.innerHTML;
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
@@ -105,24 +112,27 @@ export function OrderReceipt({
       <!DOCTYPE html>
       <html>
         <head>
+          <base href="${origin}/">
           <title>Receipt #${order.id.slice(0, 8).toUpperCase()}</title>
           <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { font-family: 'DM Sans', system-ui, sans-serif; font-size: 14px; line-height: 1.5; color: #1a1a1a; padding: 24px; max-width: 400px; margin: 0 auto; }
-            .receipt { border: 1px solid #e5e5e5; border-radius: 12px; overflow: hidden; }
-            .head { text-align: center; padding: 24px 20px; border-bottom: 2px dashed #e5e5e5; }
-            .company { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
+            body { font-family: 'DM Sans', system-ui, sans-serif; font-size: 14px; line-height: 1.5; color: #1a1a1a; padding: 20px; max-width: 420px; margin: 0 auto; background: #fff; }
+            .receipt { border: 1px solid #e5e5e5; border-radius: 12px; overflow: hidden; width: 100%; }
+            .receipt-head { text-align: center; padding: 20px 16px; border-bottom: 2px dashed #e5e5e5; }
+            .receipt-head img { max-height: 48px; width: auto; object-fit: contain; }
+            .company { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; margin-top: 8px; margin-bottom: 4px; }
             .receipt-id { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #737373; }
-            .meta { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; }
-            .meta-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
-            .items { padding: 16px 20px; border-bottom: 2px dashed #e5e5e5; }
-            .item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; }
-            .totals { padding: 16px 20px; }
-            .totals-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
-            .totals-row.total { font-size: 16px; font-weight: 700; margin-top: 12px; padding-top: 12px; border-top: 2px solid #1a1a1a; }
-            .payment { padding: 16px 20px; background: #fafafa; font-size: 12px; }
-            .footer { text-align: center; padding: 20px; font-size: 12px; color: #737373; border-top: 2px dashed #e5e5e5; }
+            .meta, .receipt-meta { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; }
+            .meta-row, .receipt-meta > div { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
+            .items, .receipt-items { padding: 14px 16px; border-bottom: 2px dashed #e5e5e5; }
+            .item, .receipt-items li { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; }
+            .totals, .receipt-totals { padding: 14px 16px; }
+            .totals-row, .receipt-totals > div { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+            .totals-row.total, .receipt-totals .border-t-2 { font-size: 16px; font-weight: 700; margin-top: 12px; padding-top: 12px; border-top: 2px solid #1a1a1a; }
+            .payment, .receipt-payment { padding: 14px 16px; background: #fafafa; font-size: 12px; }
+            .footer, .receipt-footer { text-align: center; padding: 18px 16px; font-size: 12px; color: #737373; border-top: 2px dashed #e5e5e5; }
+            a { color: #059669; text-decoration: none; }
           </style>
         </head>
         <body>${printContent}</body>
@@ -133,7 +143,7 @@ export function OrderReceipt({
     setTimeout(() => {
       printWindow.print();
       printWindow.close();
-    }, 250);
+    }, 400);
   };
 
   return (
@@ -161,13 +171,16 @@ export function OrderReceipt({
       )}
       <div
         ref={printRef}
-        className="receipt bg-white dark:bg-[var(--surface-bg)] border border-neutral-200 dark:border-[var(--surface-border)] rounded-2xl overflow-hidden shadow-sm max-w-md mx-auto"
+        className="receipt bg-white dark:bg-[var(--surface-bg)] border border-neutral-200 dark:border-[var(--surface-border)] rounded-2xl overflow-hidden shadow-sm max-w-md mx-auto w-full print:max-w-[400px] print:shadow-none print:border-gray-200"
       >
-        <div className="receipt-head text-center py-8 px-6 border-b-2 border-dashed border-neutral-200 dark:border-[var(--surface-border)]">
-          <p className="text-xl font-display font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
+        <div className="receipt-head text-center py-6 px-5 sm:py-8 sm:px-6 border-b-2 border-dashed border-neutral-200 dark:border-[var(--surface-border)]">
+          <div className="flex justify-center mb-2">
+            <Image src="/logo.png" alt="" width={120} height={48} className="h-12 w-auto object-contain" unoptimized />
+          </div>
+          <p className="company text-xl font-display font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
             {companyName}
           </p>
-          <p className="text-xs uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mt-1">
+          <p className="receipt-id text-xs uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mt-1">
             Receipt
           </p>
           <p className="text-sm font-mono font-semibold text-primary-600 dark:text-primary-400 mt-2">

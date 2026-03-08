@@ -73,39 +73,43 @@ export function Footer() {
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02)_0%,transparent_50%,rgba(5,150,105,0.03)_100%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_40%_at_50%_-20%,rgba(5,150,105,0.08),transparent_50%)]" />
 
-      {/* Feature strip – glass cards */}
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.4 }}
-        className="relative z-10 -mt-20 mx-4 sm:mx-6 lg:mx-auto lg:max-w-4xl"
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-          {features.map((f, i) => (
-            <motion.div
-              key={f.title}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.06 }}
-              whileHover={{ y: -2 }}
-              className="group flex items-center gap-4 p-4 sm:p-5 rounded-2xl bg-white/5 dark:bg-white/[0.04] border border-white/10 dark:border-white/5 backdrop-blur-sm hover:bg-white/[0.08] dark:hover:bg-white/[0.06] hover:border-white/15 transition-all duration-300"
-            >
-              <div className="flex shrink-0 w-11 h-11 rounded-xl bg-primary-500/15 dark:bg-primary-500/20 text-primary-400 flex items-center justify-center group-hover:bg-primary-500/25 transition-colors">
-                <f.icon className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="font-semibold text-white text-sm">{f.title}</p>
-                <p className="text-neutral-400 text-xs mt-0.5">{f.desc}</p>
-              </div>
-            </motion.div>
-          ))}
+      {/* Trust / features section – own section with clear separation */}
+      <section className="relative z-10 pt-16 pb-12 sm:pt-20 sm:pb-14" aria-label="Why shop with us">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4 }}
+            className="mx-auto max-w-4xl"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              {features.map((f, i) => (
+                <motion.div
+                  key={f.title}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.06 }}
+                  whileHover={{ y: -2 }}
+                  className="group flex items-center gap-4 p-4 sm:p-5 rounded-2xl bg-white/5 dark:bg-white/[0.04] border border-white/10 dark:border-white/5 backdrop-blur-sm hover:bg-white/[0.08] dark:hover:bg-white/[0.06] hover:border-white/15 transition-all duration-300"
+                >
+                  <div className="flex shrink-0 w-11 h-11 rounded-xl bg-primary-500/15 dark:bg-primary-500/20 text-primary-400 flex items-center justify-center group-hover:bg-primary-500/25 transition-colors">
+                    <f.icon className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-white text-sm">{f.title}</p>
+                    <p className="text-neutral-400 text-xs mt-0.5">{f.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
         </div>
-      </motion.div>
+      </section>
 
-      {/* Main content */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 sm:pt-16 lg:pt-20 pb-12 lg:pb-14">
+      {/* Main footer content – 233Plug, links, newsletter */}
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 lg:pt-14 pb-12 lg:pb-14 border-t border-white/10">
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-12 gap-8 lg:gap-10">
           {/* Brand */}
           <div className="col-span-2 sm:col-span-4 lg:col-span-5">

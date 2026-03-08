@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Search, Package, FileText, Clock, Truck } from "lucide-react";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { TrackingTimeline } from "@/components/tracking/TrackingTimeline";
+import { PageHero } from "@/components/ui/PageHero";
 import type { ShipmentBatch, ShipmentTrackingEvent } from "@/types";
 
 type TrackingResult = {
@@ -76,27 +77,22 @@ function TrackContent() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12 lg:py-16">
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-10"
-      >
-        <h1 className="section-title text-3xl lg:text-4xl text-neutral-900 dark:text-neutral-100 mb-2">
-          Track your order or request
-        </h1>
-        <p className="text-neutral-600 dark:text-neutral-400">
-          Enter the tracking code from your confirmation email or receipt. No login required.
-        </p>
-      </motion.div>
+    <div className="min-h-screen">
+      <PageHero
+        title="Track your order or request"
+        subtitle="Enter the tracking code from your confirmation email or receipt. No login required."
+        imageUrl="https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=1200&q=80"
+        icon={<Truck className="w-10 h-10 text-white" />}
+      />
 
-      <motion.form
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-        onSubmit={handleSubmit}
-        className="surface-card rounded-2xl p-6 lg:p-8 shadow-soft border border-neutral-100 dark:border-[var(--surface-border)] mb-8"
-      >
+      <div className="max-w-2xl mx-auto px-4 py-8 lg:py-10 -mt-2">
+        <motion.form
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          onSubmit={handleSubmit}
+          className="surface-card rounded-2xl p-6 lg:p-8 shadow-soft border border-neutral-100 dark:border-[var(--surface-border)] mb-8"
+        >
         <div className="flex gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
@@ -194,6 +190,7 @@ function TrackContent() {
           )}
         </motion.div>
       )}
+      </div>
     </div>
   );
 }
