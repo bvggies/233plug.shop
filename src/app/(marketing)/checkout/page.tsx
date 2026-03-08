@@ -214,28 +214,34 @@ export default function CheckoutPage() {
 
       if (paymentMethod === "wallet" && canUseWallet) {
         const newBalance = walletBalance - totalInGhs;
-        await supabase.from("profiles").update({ wallet_balance: newBalance }).eq("id", u.id);
-        if (appliedCoupon) {
-          await supabase.from("coupons").update({ used_count: (appliedCoupon.used_count ?? 0) + 1 }).eq("id", appliedCoupon.id);
-        }
-        await supabase.from("wallet_transactions").insert({
+        const { error: profileErr } = await supabase.from("profiles").update({ wallet_balance: newBalance }).eq("id", u.id);
+        if (profileErr) throw new Error("Failed to deduct wallet balance");
+        const { error: wtErr } = await supabase.from("wallet_transactions").insert({
           user_id: u.id,
           amount: -totalInGhs,
           type: "debit",
           reference_id: order.id,
         });
-        await supabase
-          .from("orders")
-          .update({ status: "paid" })
-          .eq("id", order.id);
-        await supabase.from("payments").insert({
-          user_id: u.id,
-          order_id: order.id,
-          amount: totalInGhs,
-          currency: "GHS",
-          payment_method: "wallet",
-          status: "completed",
+        if (wtErr) {
+          await supabase.from("profiles").update({ wallet_balance: walletBalance }).eq("id", u.id);
+          throw new Error("Failed to record transaction");
+        }
+        const completeRes = await fetch("/api/payments/wallet/complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId: order.id }),
         });
+        const completeData = await completeRes.json();
+        if (!completeRes.ok) {
+          await supabase.from("profiles").update({ wallet_balance: walletBalance }).eq("id", u.id);
+          await supabase.from("wallet_transactions").insert({
+            user_id: u.id,
+            amount: totalInGhs,
+            type: "credit",
+            reference_id: order.id,
+          });
+          throw new Error(completeData.error ?? "Payment could not be completed");
+        }
         clearCart();
         toast.success("Order placed successfully!");
         router.push(`/dashboard/orders/${order.id}/receipt`);

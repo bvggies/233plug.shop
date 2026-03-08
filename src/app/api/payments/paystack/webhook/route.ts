@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   if (event.event === "charge.success") {
     const { orderId } = event.data.metadata || {};
     if (orderId) {
-      const supabase = await createClient();
+      const supabase = createAdminClient();
       const { data: order } = await supabase.from("orders").select("user_id, coupon_id").eq("id", orderId).single();
       if (order) {
         await supabase.from("orders").update({ status: "paid" }).eq("id", orderId);
