@@ -6,11 +6,13 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { ShoppingCart, Minus, Plus, Trash2 } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
-import { formatPrice } from "@/lib/utils";
+import { useDisplayPrice, DisplayPrice } from "@/hooks/useDisplayPrice";
 
 export default function CartPage() {
   const router = useRouter();
   const { items, totalPrice, updateQuantity, removeItem } = useCartStore();
+  const total = totalPrice();
+  const displayTotal = useDisplayPrice(total, "GHS");
 
   if (items.length === 0) {
     return (
@@ -33,8 +35,6 @@ export default function CartPage() {
       </div>
     );
   }
-
-  const total = totalPrice();
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
@@ -85,7 +85,7 @@ export default function CartPage() {
                     {product?.name ?? "Product"}
                   </Link>
                   <p className="text-primary-600 dark:text-primary-400 font-semibold mt-1">
-                    {formatPrice(item.price, product?.currency ?? "GHS")}
+                    <DisplayPrice amount={item.price} currency={product?.currency ?? "GHS"} />
                   </p>
 
                   <div className="flex items-center gap-4 mt-3">
@@ -134,7 +134,7 @@ export default function CartPage() {
 
                 <div className="text-right">
                   <p className="font-semibold text-neutral-900 dark:text-neutral-100">
-                    {formatPrice(item.price * item.quantity, product?.currency ?? "GHS")}
+                    <DisplayPrice amount={item.price * item.quantity} currency={product?.currency ?? "GHS"} />
                   </p>
                 </div>
               </motion.div>
@@ -155,11 +155,11 @@ export default function CartPage() {
             <div className="space-y-2 mb-6">
               <div className="flex justify-between text-description text-sm lg:text-base">
                 <span>Items ({items.length})</span>
-                <span>{formatPrice(total, "GHS")}</span>
+                <span>{displayTotal}</span>
               </div>
               <div className="flex justify-between font-semibold text-lg lg:text-xl pt-4 border-t border-neutral-200 dark:border-[var(--surface-border)]">
                 <span className="text-neutral-900 dark:text-neutral-100">Total</span>
-                <span className="text-primary-600 dark:text-primary-400">{formatPrice(total, "GHS")}</span>
+                <span className="text-primary-600 dark:text-primary-400">{displayTotal}</span>
               </div>
             </div>
             <motion.button

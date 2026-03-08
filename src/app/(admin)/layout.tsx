@@ -19,6 +19,8 @@ import {
   LogOut,
   ChevronRight,
   Menu,
+  Users,
+  MapPin,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { Logo } from "@/components/ui/Logo";
@@ -32,12 +34,16 @@ const navGroups = [
     items: [{ href: "/admin", label: "Overview", icon: LayoutDashboard }],
   },
   {
+    label: "People",
+    items: [{ href: "/admin/users", label: "Users", icon: Users }],
+  },
+  {
     label: "Content",
     items: [
       { href: "/admin/hero", label: "Hero Slides", icon: Image },
       { href: "/admin/pages", label: "Site Pages", icon: FileText },
       { href: "/admin/faqs", label: "FAQs", icon: HelpCircle },
-      { href: "/admin/contact", label: "Contact", icon: Mail },
+      { href: "/admin/contact", label: "Contact form", icon: Mail },
     ],
   },
   {
@@ -47,6 +53,7 @@ const navGroups = [
       { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
       { href: "/admin/requests", label: "Requests", icon: ShoppingBag },
       { href: "/admin/shipments", label: "Shipments", icon: Truck },
+      { href: "/admin/shipping-zones", label: "Shipping zones", icon: MapPin },
       { href: "/admin/coupons", label: "Coupons", icon: Ticket },
     ],
   },

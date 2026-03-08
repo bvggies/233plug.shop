@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { ShoppingCart, Heart } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
-import { formatPrice } from "@/lib/utils";
+import { useDisplayPrice } from "@/hooks/useDisplayPrice";
 import type { Product } from "@/types";
 import { toast } from "sonner";
 
@@ -16,6 +16,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, compact }: ProductCardProps) {
   const addItem = useCartStore((s) => s.addItem);
+  const displayPrice = useDisplayPrice(product.price, product.currency);
   const image = product.images?.[0];
   const categoryLabel = product.category?.name ?? null;
 
@@ -31,15 +32,15 @@ export function ProductCard({ product, compact }: ProductCardProps) {
   };
 
   return (
-    <Link href={`/shop/${product.id}`}>
+    <Link href={`/shop/${product.id}`} className="block h-full">
       <motion.div
         whileHover={{ scale: 1.03, y: -4 }}
         whileTap={{ scale: 0.98 }}
         transition={{ type: "spring", stiffness: 400, damping: 20 }}
-        className={`group surface-card-hover overflow-hidden ${compact ? "rounded-xl" : "rounded-2xl md:rounded-3xl"}`}
+        className={`group surface-card-hover overflow-hidden flex flex-col h-full ${compact ? "rounded-xl" : "rounded-2xl md:rounded-3xl"}`}
       >
-        {/* Top: image + favorite */}
-        <div className="relative aspect-square overflow-hidden bg-neutral-100 dark:bg-[var(--surface-border)]">
+        {/* Top: image - fixed aspect ratio */}
+        <div className="relative aspect-square w-full flex-shrink-0 overflow-hidden bg-neutral-100 dark:bg-[var(--surface-border)]">
           {image ? (
             <Image
               src={image}
@@ -86,21 +87,21 @@ export function ProductCard({ product, compact }: ProductCardProps) {
           )}
         </div>
 
-        {/* Middle: title + category */}
-        <div className={compact ? "p-3" : "p-4"}>
+        {/* Content: fixed height so all cards match */}
+        <div className={`flex flex-col flex-1 min-h-[200px] ${compact ? "p-3 min-h-[160px]" : "p-4"}`}>
           {categoryLabel && (
             <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">
               {categoryLabel}
             </p>
           )}
-          <h3 className={`product-title text-neutral-900 dark:text-neutral-100 line-clamp-2 mb-2 ${compact ? "text-sm" : ""}`}>
+          <h3 className={`product-title text-neutral-900 dark:text-neutral-100 line-clamp-2 mb-2 flex-1 min-h-[2.5em] ${compact ? "text-sm min-h-[2.25em]" : ""}`}>
             {product.name}
           </h3>
 
-          {/* Bottom: price + add to cart */}
-          <div className="flex items-center justify-between gap-2 flex-wrap">
+          {/* Bottom: price + add to cart - anchored to bottom */}
+          <div className="flex items-center justify-between gap-2 flex-wrap mt-auto pt-2">
             <p className={`font-bold text-primary-600 dark:text-primary-400 ${compact ? "text-sm" : "text-lg"}`}>
-              {formatPrice(product.price, product.currency)}
+              {displayPrice}
             </p>
             <motion.button
               onClick={handleAddToCart}

@@ -21,7 +21,8 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useCartStore } from "@/store/cart-store";
-import { formatPrice, formatDate } from "@/lib/utils";
+import { useDisplayPrice } from "@/hooks/useDisplayPrice";
+import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 import { ProductCard } from "@/components/product/ProductCard";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -42,6 +43,10 @@ export default function ProductDetailPage() {
   const [activeTab, setActiveTab] = useState<"description" | "shipping" | "reviews">("description");
   const supabase = createClient();
   const addItem = useCartStore((s) => s.addItem);
+  const displayPriceForHook = product
+    ? (selectedVariant ? product.price + (selectedVariant.price_adjustment ?? 0) : product.price)
+    : 0;
+  const productPriceDisplay = useDisplayPrice(displayPriceForHook, product?.currency ?? "GHS");
 
   useEffect(() => {
     async function load() {
@@ -294,7 +299,7 @@ export default function ProductDetailPage() {
           </h1>
 
           <p className="text-2xl text-primary-600 font-semibold mb-4">
-            {formatPrice(displayPrice, product.currency)}
+            {productPriceDisplay}
           </p>
 
           {variants.length > 0 && (

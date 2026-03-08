@@ -27,6 +27,8 @@ const links = [
   { name: "About Us", href: "/about" },
   { name: "Contact", href: "/contact" },
   { name: "FAQ", href: "/faq" },
+  { name: "Shipping Policy", href: "/shipping" },
+  { name: "Refunds & Returns", href: "/refunds" },
   { name: "Privacy Policy", href: "/privacy" },
   { name: "Request Item", href: "/request" },
 ];
@@ -38,56 +40,10 @@ const social = [
 ];
 
 const features = [
-  {
-    icon: Truck,
-    title: "Free Shipping",
-    desc: "On orders over GHS 500",
-  },
-  {
-    icon: Shield,
-    title: "Secure Payment",
-    desc: "Paystack & Stripe",
-  },
-  {
-    icon: Sparkles,
-    title: "Quality Assured",
-    desc: "Sourced with care",
-  },
+  { icon: Truck, title: "Free Shipping", desc: "On orders over GHS 500" },
+  { icon: Shield, title: "Secure Payment", desc: "Paystack & Stripe" },
+  { icon: Sparkles, title: "Quality Assured", desc: "Sourced with care" },
 ];
-
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.08, staggerDirection: 1 },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0 },
-};
-
-function AnimatedLink({
-  href,
-  children,
-  className = "",
-}: {
-  href: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <Link href={href} className={`group relative inline-block ${className}`}>
-      <span className="relative z-10">{children}</span>
-      <motion.span
-        className="absolute bottom-0 left-0 h-px bg-accent-400"
-        initial={{ width: 0 }}
-        whileHover={{ width: "100%" }}
-        transition={{ duration: 0.2 }}
-      />
-    </Link>
-  );
-}
 
 export function Footer() {
   const [email, setEmail] = useState("");
@@ -107,192 +63,175 @@ export function Footer() {
     }, 800);
   };
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
-    <footer className="relative z-10 mt-24 overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-neutral-50 via-neutral-900 to-neutral-950 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_0%,rgba(245,158,11,0.06),transparent)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_100%,rgba(5,150,105,0.12),transparent)]" />
+    <footer className="relative z-20 mt-24 overflow-hidden">
+      {/* Background – modern dark with subtle grain */}
+      <div className="absolute inset-0 bg-neutral-950 dark:bg-neutral-950" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02)_0%,transparent_50%,rgba(5,150,105,0.03)_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_40%_at_50%_-20%,rgba(5,150,105,0.08),transparent_50%)]" />
 
-      {/* Feature strip */}
+      {/* Feature strip – glass cards */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="relative -mt-16 mx-4 md:mx-6 lg:mx-auto lg:max-w-5xl mb-0"
+        transition={{ duration: 0.4 }}
+        className="relative z-10 -mt-20 mx-4 sm:mx-6 lg:mx-auto lg:max-w-4xl"
       >
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           {features.map((f, i) => (
             <motion.div
               key={f.title}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              whileHover={{ y: -4 }}
-              className="flex items-center gap-4 p-4 lg:p-5 rounded-2xl lg:rounded-3xl surface-card hover:shadow-card-hover transition-all"
+              transition={{ delay: i * 0.06 }}
+              whileHover={{ y: -2 }}
+              className="group flex items-center gap-4 p-4 sm:p-5 rounded-2xl bg-white/5 dark:bg-white/[0.04] border border-white/10 dark:border-white/5 backdrop-blur-sm hover:bg-white/[0.08] dark:hover:bg-white/[0.06] hover:border-white/15 transition-all duration-300"
             >
-              <div className="p-2.5 lg:p-3 rounded-xl bg-primary-500/10 dark:bg-primary-500/20 text-primary-600 dark:text-primary-400">
-                <f.icon className="w-5 h-5 lg:w-6 lg:h-6" />
+              <div className="flex shrink-0 w-11 h-11 rounded-xl bg-primary-500/15 dark:bg-primary-500/20 text-primary-400 flex items-center justify-center group-hover:bg-primary-500/25 transition-colors">
+                <f.icon className="w-5 h-5" />
               </div>
-              <div>
-                <p className="font-semibold text-neutral-900 dark:text-neutral-100 text-sm lg:text-base">{f.title}</p>
-                <p className="text-description text-xs lg:text-sm">{f.desc}</p>
+              <div className="min-w-0">
+                <p className="font-semibold text-white text-sm">{f.title}</p>
+                <p className="text-neutral-400 text-xs mt-0.5">{f.desc}</p>
               </div>
             </motion.div>
           ))}
         </div>
       </motion.div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 lg:pt-20 pb-10 lg:pb-12">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-10"
-        >
-          {/* Brand column */}
-          <motion.div variants={itemVariants} className="lg:col-span-5">
-            <Link href="/" className="inline-block mb-6">
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="inline-flex p-3 lg:p-4 rounded-2xl bg-white/10 ring-2 ring-white/20"
-              >
+      {/* Main content */}
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 sm:pt-16 lg:pt-20 pb-12 lg:pb-14">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-12 gap-8 lg:gap-10">
+          {/* Brand */}
+          <div className="col-span-2 sm:col-span-4 lg:col-span-5">
+            <Link href="/" className="inline-flex items-center gap-2 mb-5">
+              <span className="flex p-2 rounded-xl bg-white/10 border border-white/10">
                 <Logo variant="dark" size="lg" asLink={false} />
-              </motion.div>
+              </span>
             </Link>
-            <p className="text-neutral-400 text-sm lg:text-base leading-relaxed mb-6 max-w-sm">
-              Premium e-commerce platform. Shop perfumes, sneakers, electronics &
-              accessories. Request-to-buy sourcing from Ghana.
+            <p className="text-neutral-400 text-sm leading-relaxed max-w-xs mb-6">
+              Premium e-commerce. Perfumes, sneakers, electronics & accessories. Request-to-buy from Ghana.
             </p>
-            <div className="flex gap-3">
-              {social.map(({ icon: Icon, href, label }, i) => (
-                <motion.a
+            <div className="flex gap-2">
+              {social.map(({ icon: Icon, href, label }) => (
+                <a
                   key={label}
                   href={href}
                   aria-label={label}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.2 + i * 0.05 }}
-                  whileHover={{ scale: 1.15, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="p-2.5 rounded-xl bg-neutral-800/80 text-neutral-400 hover:bg-primary-500/20 hover:text-accent-400 transition-colors"
+                  className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-neutral-400 hover:text-primary-400 hover:border-primary-500/30 hover:bg-primary-500/10 flex items-center justify-center transition-all duration-200"
                 >
-                  <Icon className="w-5 h-5" />
-                </motion.a>
+                  <Icon className="w-4 h-4" />
+                </a>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* Categories */}
-          <motion.div variants={itemVariants} className="lg:col-span-2">
-            <h3 className="section-title text-white mb-4 lg:mb-5 text-lg lg:text-xl">
-              Categories
+          <div className="col-span-1 sm:col-span-2 lg:col-span-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-4">
+              Shop
             </h3>
-            <ul className="space-y-3">
+            <ul className="space-y-2.5">
               {categories.map((cat) => (
                 <li key={cat.href}>
-                  <AnimatedLink
+                  <Link
                     href={cat.href}
-                    className="text-neutral-400 hover:text-accent-400 text-sm lg:text-base transition-colors"
+                    className="text-sm text-neutral-400 hover:text-white transition-colors"
                   >
                     {cat.name}
-                  </AnimatedLink>
+                  </Link>
                 </li>
               ))}
             </ul>
-          </motion.div>
+          </div>
 
           {/* Quick links */}
-          <motion.div variants={itemVariants} className="lg:col-span-2">
-            <h3 className="section-title text-white mb-4 lg:mb-5 text-lg lg:text-xl">
-              Quick Links
+          <div className="col-span-1 sm:col-span-2 lg:col-span-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-4">
+              Company
             </h3>
-            <ul className="space-y-3">
+            <ul className="space-y-2.5">
               {links.map((link) => (
                 <li key={link.href}>
-                  <AnimatedLink
+                  <Link
                     href={link.href}
-                    className="text-neutral-400 hover:text-accent-400 text-sm lg:text-base transition-colors"
+                    className="text-sm text-neutral-400 hover:text-white transition-colors"
                   >
                     {link.name}
-                  </AnimatedLink>
+                  </Link>
                 </li>
               ))}
             </ul>
-          </motion.div>
+          </div>
 
           {/* Newsletter */}
-          <motion.div variants={itemVariants} className="lg:col-span-3">
-            <h3 className="section-title text-white mb-4 lg:mb-5 text-lg lg:text-xl">
+          <div className="col-span-2 sm:col-span-4 lg:col-span-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-4">
               Newsletter
             </h3>
-            <p className="text-sm lg:text-base text-neutral-400 mb-4">
-              Subscribe for updates and exclusive offers.
+            <p className="text-sm text-neutral-400 mb-4">
+              Updates and exclusive offers.
             </p>
-            <form onSubmit={handleSubscribe} className="space-y-3">
-              <div className="relative">
+            <form onSubmit={handleSubscribe} className="space-y-2">
+              <div className="flex gap-2">
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  className="w-full px-4 py-3 lg:py-3.5 pr-12 rounded-xl lg:rounded-2xl bg-neutral-800/80 dark:bg-neutral-800/60 border border-neutral-700/50 text-white placeholder-neutral-500 focus:ring-2 focus:ring-accent-500/50 focus:border-accent-500/50 transition-all"
+                  placeholder="Email address"
+                  className="flex-1 min-w-0 h-11 px-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-neutral-500 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all"
                 />
-                <motion.button
+                <button
                   type="submit"
                   disabled={subscribing}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-accent-500 text-white hover:bg-accent-400 transition disabled:opacity-50"
+                  className="shrink-0 h-11 px-4 rounded-xl bg-primary-500 hover:bg-primary-400 text-white font-medium text-sm transition-colors disabled:opacity-50 flex items-center gap-2"
                 >
                   <Mail className="w-4 h-4" />
-                </motion.button>
+                  <span className="hidden sm:inline">Join</span>
+                </button>
               </div>
             </form>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
         {/* Bottom bar */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="mt-16 lg:mt-20 pt-8 lg:pt-10 border-t border-neutral-800/80 flex flex-col md:flex-row justify-between items-center gap-4"
-        >
-          <p className="text-sm lg:text-base text-neutral-500">
+        <div className="mt-12 lg:mt-14 pt-6 lg:pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-xs text-neutral-500 order-2 sm:order-1">
             © {new Date().getFullYear()} 233Plug. All rights reserved.
           </p>
-          <div className="flex items-center gap-6 lg:gap-8">
+          <div className="flex items-center gap-6 order-1 sm:order-2">
             <Link
               href="/terms"
-              className="text-sm lg:text-base text-neutral-500 hover:text-neutral-400 transition"
+              className="text-xs text-neutral-500 hover:text-neutral-400 transition"
             >
               Terms
             </Link>
             <Link
+              href="/shipping"
+              className="text-xs text-neutral-500 hover:text-neutral-400 transition"
+            >
+              Shipping
+            </Link>
+            <Link
               href="/privacy"
-              className="text-sm lg:text-base text-neutral-500 hover:text-neutral-400 transition"
+              className="text-xs text-neutral-500 hover:text-neutral-400 transition"
             >
               Privacy
             </Link>
-            <motion.button
+            <button
+              type="button"
               onClick={scrollToTop}
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 px-4 py-2.5 lg:px-5 lg:py-3 rounded-xl bg-neutral-800/80 text-neutral-400 hover:text-accent-400 hover:bg-neutral-800 transition"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-neutral-400 hover:text-white hover:bg-white/5 transition-all"
             >
               <ArrowUp className="w-4 h-4" />
-              <span className="text-sm font-medium">Back to top</span>
-            </motion.button>
+              Back to top
+            </button>
           </div>
-        </motion.div>
+        </div>
       </div>
     </footer>
   );

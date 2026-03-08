@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { ProductCard } from "@/components/product/ProductCard";
@@ -15,6 +16,7 @@ import {
   X,
   SlidersHorizontal,
   Sparkles,
+  ArrowRight,
 } from "lucide-react";
 import type { Product, Category } from "@/types";
 
@@ -280,13 +282,27 @@ export function ShopContent() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero header */}
-      <div className="bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 rounded-2xl lg:rounded-3xl mx-4 md:mx-6 lg:mx-auto lg:max-w-7xl mb-8 md:mb-12 px-6 py-12 md:py-16 lg:px-10 lg:py-20 shadow-lg">
+      {/* Hero header with background image */}
+      <div className="relative overflow-hidden rounded-2xl lg:rounded-3xl mx-4 md:mx-6 lg:mx-auto lg:max-w-7xl mb-8 md:mb-12 shadow-lg min-h-[220px] md:min-h-[260px] flex items-center">
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&q=80"
+            alt=""
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 1280px"
+            priority
+          />
+        </div>
+        <div
+          className="absolute inset-0 z-[1] bg-gradient-to-br from-primary-600/90 via-primary-700/85 to-primary-800/90"
+          aria-hidden
+        />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="max-w-4xl"
+          className="relative z-10 max-w-4xl px-6 py-12 md:py-16 lg:px-10 lg:py-20"
         >
           <h1 className="hero-title text-3xl md:text-4xl lg:text-5xl text-white tracking-tight mb-2">
             {selectedCategories.length === 1
@@ -407,7 +423,7 @@ export function ShopContent() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
                       transition={{ delay: Math.min(i * 0.03, 0.3) }}
-                      className={viewMode === "compact" ? "min-w-0" : ""}
+                      className={`h-full ${viewMode === "compact" ? "min-w-0" : ""}`}
                     >
                       <ProductCard
                         product={product}
@@ -417,6 +433,39 @@ export function ShopContent() {
                   ))}
                 </AnimatePresence>
               </motion.div>
+            )}
+
+            {/* Request item CTA - shown after products or empty state */}
+            {!loading && (
+              <motion.section
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
+                className="mt-10 lg:mt-12"
+              >
+                <Link
+                  href="/request"
+                  className="group flex flex-col sm:flex-row items-center justify-between gap-6 p-6 md:p-8 rounded-2xl lg:rounded-3xl bg-gradient-to-br from-primary-500/10 via-primary-500/5 to-transparent dark:from-primary-500/20 dark:via-primary-500/10 dark:to-transparent border border-primary-500/20 dark:border-primary-500/30 hover:border-primary-500/40 dark:hover:border-primary-500/50 transition-colors"
+                >
+                  <div className="flex items-center gap-4 text-center sm:text-left">
+                    <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-primary-500/20 dark:bg-primary-500/30 flex items-center justify-center">
+                      <Sparkles className="w-7 h-7 text-primary-600 dark:text-primary-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-display font-semibold text-lg text-neutral-900 dark:text-neutral-100 mb-1">
+                        Item you&apos;re looking for not here?
+                      </h3>
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                        Tell us what you need and we&apos;ll source it for you. Request from us — no obligation.
+                      </p>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary-500 text-white font-medium text-sm hover:bg-primary-600 transition group-hover:gap-3">
+                    Request from us
+                    <ArrowRight className="w-4 h-4" />
+                  </span>
+                </Link>
+              </motion.section>
             )}
           </div>
         </div>

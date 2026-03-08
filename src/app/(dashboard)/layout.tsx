@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { CurrencySwitcher } from "@/components/currency/CurrencySwitcher";
 import { Logo } from "@/components/ui/Logo";
 import {
   ShoppingBag,
@@ -194,7 +195,6 @@ export default function DashboardLayout({
           />
           <aside
             className="fixed inset-y-0 left-0 w-full max-w-[min(100vw,320px)] bg-white dark:bg-neutral-950 border-r border-neutral-200 dark:border-neutral-800 z-[100] md:hidden flex flex-col overflow-y-auto overflow-x-hidden"
-            aria-modal
             aria-label="Navigation menu"
           >
             <div className="flex items-center justify-between p-4 border-b border-neutral-100 dark:border-neutral-800 flex-shrink-0">
@@ -229,6 +229,10 @@ export default function DashboardLayout({
               })}
             </nav>
             <div className="p-4 border-t border-neutral-100 dark:border-neutral-800 flex flex-col gap-3 flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Currency</span>
+                <CurrencySwitcher />
+              </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Theme</span>
                 <ThemeToggle />

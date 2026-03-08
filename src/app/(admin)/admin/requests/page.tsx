@@ -16,6 +16,9 @@ type RequestRow = {
   budget: number | null;
   status: string;
   quote_price: number | null;
+  quote_response: string | null;
+  quote_response_message: string | null;
+  counter_price: number | null;
   shipment_batch_id: string | null;
   created_at: string;
   updated_at: string;
@@ -36,6 +39,9 @@ const statusColors: Record<string, string> = {
 export default function AdminRequestsPage() {
   const [requests, setRequests] = useState<RequestRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkStatus, setBulkStatus] = useState<string>("reviewing");
+  const [bulkApplying, setBulkApplying] = useState(false);
   const [selected, setSelected] = useState<RequestRow | null>(null);
   const [quotePrice, setQuotePrice] = useState("");
   const [editingQuote, setEditingQuote] = useState(false);
@@ -50,7 +56,7 @@ export default function AdminRequestsPage() {
   const load = () => {
     supabase
       .from("requests")
-      .select("id, user_id, product_name, link_or_image, description, budget, status, quote_price, shipment_batch_id, created_at, updated_at")
+      .select("id, user_id, product_name, link_or_image, description, budget, status, quote_price, quote_response, quote_response_message, counter_price, shipment_batch_id, created_at, updated_at")
       .order("created_at", { ascending: false })
       .then(({ data, error }) => {
         if (!error) setRequests((data as RequestRow[]) || []);
@@ -78,6 +84,7 @@ export default function AdminRequestsPage() {
       .eq("request_id", selected.id)
       .order("created_at", { ascending: true })
       .then(({ data }) => setUpdates((data as { id: string; message: string; status_snapshot: string | null; created_at: string }[]) || []));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- selected.id is the intended dependency; including selected causes unnecessary refetches
   }, [selected?.id, supabase]);
 
   const addUpdate = async () => {
@@ -134,7 +141,11 @@ export default function AdminRequestsPage() {
       const amount = parseFloat(quotePrice);
       const { error } = await supabase
         .from("requests")
-        .update(isUpdate ? { quote_price: amount } : { status: "quoted", quote_price: amount })
+        .update(
+          isUpdate
+            ? { quote_price: amount, quote_response: null, quote_response_message: null, counter_price: null }
+            : { status: "quoted", quote_price: amount, quote_response: null, quote_response_message: null, counter_price: null }
+        )
         .eq("id", selected.id);
       if (error) throw error;
       await supabase.from("notifications").insert({
@@ -202,6 +213,48 @@ export default function AdminRequestsPage() {
     } catch { toast.error("Failed to update"); }
   };
 
+  const toggleOneRequest = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAllRequests = () => {
+    if (selectedIds.size === requests.length) setSelectedIds(new Set());
+    else setSelectedIds(new Set(requests.map((r) => r.id)));
+  };
+
+  const bulkUpdateRequestStatus = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkApplying(true);
+    try {
+      const ids = Array.from(selectedIds);
+      const { error } = await supabase.from("requests").update({ status: bulkStatus }).in("id", ids);
+      if (error) throw error;
+      const affected = requests.filter((r) => ids.includes(r.id));
+      for (const r of affected) {
+        await supabase.from("notifications").insert({
+          user_id: r.user_id,
+          type: "request_status",
+          message: `Request "${r.product_name}" is now ${bulkStatus.replace("_", " ")}.`,
+        });
+      }
+      toast.success(`${ids.length} request(s) updated to ${bulkStatus}`);
+      setSelectedIds(new Set());
+      load();
+      if (selected && selectedIds.has(selected.id)) setSelected({ ...selected, status: bulkStatus });
+    } catch {
+      toast.error("Failed to update requests");
+    } finally {
+      setBulkApplying(false);
+    }
+  };
+
+  const REQUEST_STATUSES = Object.keys(statusColors);
+
   if (loading) {
     return (
       <div>
@@ -218,6 +271,34 @@ export default function AdminRequestsPage() {
         <p className="text-gray-500 text-sm mt-1">{requests.length} request(s)</p>
       </div>
 
+      {selectedIds.size > 0 && (
+        <div className="mb-4 p-4 rounded-xl bg-primary-50 border border-primary-200 flex flex-wrap items-center gap-3">
+          <span className="font-medium text-primary-800">{selectedIds.size} selected</span>
+          <select
+            value={bulkStatus}
+            onChange={(e) => setBulkStatus(e.target.value)}
+            className="px-3 py-2 rounded-lg border border-primary-200 bg-white text-gray-900 text-sm"
+          >
+            {REQUEST_STATUSES.map((s) => (
+              <option key={s} value={s}>{s.replace("_", " ")}</option>
+            ))}
+          </select>
+          <button
+            onClick={bulkUpdateRequestStatus}
+            disabled={bulkApplying}
+            className="px-4 py-2 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600 disabled:opacity-50"
+          >
+            {bulkApplying ? "Updating…" : "Update status"}
+          </button>
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Clear selection
+          </button>
+        </div>
+      )}
+
       {requests.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center text-gray-500 shadow-soft border border-gray-100">
           No requests yet.
@@ -228,6 +309,14 @@ export default function AdminRequestsPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <th className="w-10 px-4 py-4">
+                    <input
+                      type="checkbox"
+                      checked={requests.length > 0 && selectedIds.size === requests.length}
+                      onChange={toggleAllRequests}
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                  </th>
                   <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Product</th>
                   <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Budget</th>
                   <th className="text-left px-6 py-4 text-sm font-semibold text-gray-600">Status</th>
@@ -237,7 +326,16 @@ export default function AdminRequestsPage() {
               </thead>
               <tbody>
                 {requests.map((r) => (
-                  <tr key={r.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50/50">
+                  <tr key={r.id} className={`border-b border-gray-100 last:border-0 hover:bg-gray-50/50 ${selectedIds.has(r.id) ? "bg-primary-50/50" : ""}`}>
+                    <td className="w-10 px-4 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(r.id)}
+                        onChange={() => toggleOneRequest(r.id)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      />
+                    </td>
                     <td className="px-6 py-4">
                       <button
                         onClick={() => { setSelected(r); setQuotePrice(String(r.quote_price ?? "")); }}
@@ -286,6 +384,13 @@ export default function AdminRequestsPage() {
               <p className="text-sm"><strong>Budget:</strong> {selected.budget != null ? formatPrice(selected.budget, "GHS") : "—"}</p>
               <p className="text-sm"><strong>Status:</strong> <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[selected.status]}`}>{selected.status.replace("_", " ")}</span></p>
               {selected.quote_price != null && <p className="text-sm"><strong>Quote:</strong> {formatPrice(selected.quote_price, "GHS")}</p>}
+              {selected.quote_response && (
+                <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                  <p className="text-sm font-medium text-gray-700">Customer response: {selected.quote_response.replace("_", " ")}</p>
+                  {selected.quote_response_message && <p className="text-sm text-gray-600 mt-1">{selected.quote_response_message}</p>}
+                  {selected.counter_price != null && <p className="text-sm text-gray-600 mt-0.5">Counter price: {formatPrice(selected.counter_price, "GHS")}</p>}
+                </div>
+              )}
 
               {(selected.status === "pending" || selected.status === "reviewing") && (
                 <div className="pt-4 border-t border-gray-100">

@@ -20,8 +20,10 @@ import {
   X,
   ShoppingBag,
   FileText,
+  Receipt,
+  Home,
 } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, formatDate } from "@/lib/utils";
 
 interface ProfileData {
   name: string | null;
@@ -43,6 +45,7 @@ export default function DashboardProfilePage() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [ordersCount, setOrdersCount] = useState(0);
   const [requestsCount, setRequestsCount] = useState(0);
+  const [recentReceipts, setRecentReceipts] = useState<{ id: string; total_price: number; currency: string; created_at: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -62,6 +65,7 @@ export default function DashboardProfilePage() {
           { data: p },
           { count: orders },
           { count: requests },
+          { data: paidOrders },
         ] = await Promise.all([
           supabase
             .from("profiles")
@@ -70,10 +74,18 @@ export default function DashboardProfilePage() {
             .single(),
           supabase.from("orders").select("*", { count: "exact", head: true }).eq("user_id", user.id),
           supabase.from("requests").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+          supabase
+            .from("orders")
+            .select("id, total_price, currency, created_at")
+            .eq("user_id", user.id)
+            .in("status", ["paid", "shipped", "delivered"])
+            .order("created_at", { ascending: false })
+            .limit(5),
         ]);
         if (p) setProfile(p as ProfileData);
         setOrdersCount(orders ?? 0);
         setRequestsCount(requests ?? 0);
+        setRecentReceipts((paidOrders as { id: string; total_price: number; currency: string; created_at: string }[]) ?? []);
         if (p) {
           setValue("name", p.name || "");
           setValue("phone", p.phone || "");
@@ -123,11 +135,11 @@ export default function DashboardProfilePage() {
   if (loading) {
     return (
       <div className="max-w-md mx-auto animate-pulse space-y-6">
-        <div className="h-48 bg-gray-200 rounded-b-[2rem]" />
-        <div className="h-24 bg-gray-200 rounded-2xl -mt-20 mx-4" />
+        <div className="h-48 bg-neutral-200 dark:bg-neutral-800 rounded-b-[2rem]" />
+        <div className="h-24 bg-neutral-200 dark:bg-neutral-700 rounded-2xl -mt-20 mx-4" />
         <div className="space-y-2 px-4">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-14 bg-gray-200 rounded-xl" />
+            <div key={i} className="h-14 bg-neutral-200 dark:bg-neutral-700 rounded-xl" />
           ))}
         </div>
       </div>
@@ -254,6 +266,56 @@ export default function DashboardProfilePage() {
         </div>
       </motion.div>
 
+      {/* Recent receipts */}
+      {recentReceipts.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08 }}
+          className="mt-6 px-4"
+        >
+          <div className="surface-card rounded-2xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-neutral-100 dark:border-[var(--surface-border)] flex items-center justify-between">
+              <h2 className="font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                <Receipt className="w-5 h-5 text-primary-500 dark:text-primary-400" />
+                Recent receipts
+              </h2>
+              <Link
+                href="/dashboard"
+                className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline"
+              >
+                All orders
+              </Link>
+            </div>
+            <ul className="divide-y divide-neutral-100 dark:divide-[var(--surface-border)]">
+              {recentReceipts.map((order) => (
+                <li key={order.id}>
+                  <Link
+                    href={`/dashboard/orders/${order.id}/receipt`}
+                    className="flex items-center justify-between px-4 py-3.5 hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors"
+                  >
+                    <div>
+                      <p className="font-mono text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                        #{order.id.slice(0, 8).toUpperCase()}
+                      </p>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        {formatDate(order.created_at)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                        {formatPrice(order.total_price, order.currency)}
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-neutral-400" />
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </motion.div>
+      )}
+
       {/* Menu list */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -262,9 +324,11 @@ export default function DashboardProfilePage() {
         className="mt-6 px-4 space-y-2"
       >
         <div className="surface-card rounded-2xl overflow-hidden divide-y divide-neutral-100 dark:divide-[var(--surface-border)]">
+          {menuItem(Home, "Home", "Back to main page", undefined, "/")}
           {menuItem(User, "Edit profile", profile.phone || profile.address || undefined, () => setEditOpen(true))}
           {menuItem(Lock, "Change password", undefined, () => setPasswordOpen(true))}
           {menuItem(Wallet, "Wallet", formatPrice(profile.wallet_balance, "GHS"), undefined, "/dashboard/wallet")}
+          {menuItem(Receipt, "Order history & receipts", undefined, undefined, "/dashboard")}
           {menuItem(Gift, "Referral code", profile.referral_code || undefined, undefined, "/dashboard/referrals")}
           {menuItem(MapPin, "Addresses", undefined, undefined, "/dashboard/addresses")}
           {menuItem(Bell, "Notifications", undefined, undefined, "/dashboard/notifications")}
@@ -272,7 +336,7 @@ export default function DashboardProfilePage() {
 
         <button
           onClick={handleSignOut}
-          className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border border-red-200 text-red-600 font-medium hover:bg-red-50 active:bg-red-100 transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border border-red-200 dark:border-red-900/60 text-red-600 dark:text-red-400 font-medium hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 transition-colors"
         >
           <LogOut className="w-5 h-5" />
           Sign out

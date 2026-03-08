@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { Pencil } from "lucide-react";
 import type { SitePage } from "@/types";
 
-const SLUGS = ["about", "contact", "privacy", "terms"] as const;
+const SLUGS = ["about", "contact", "privacy", "terms", "shipping", "refunds"] as const;
 
 export default function AdminPagesPage() {
   const [pages, setPages] = useState<SitePage[]>([]);
@@ -35,6 +35,10 @@ export default function AdminPagesPage() {
   }
 
   const getPageBySlug = (slug: string) => pages.find((p) => p.slug === slug);
+  const getLabel = (slug: string) => {
+    const labels: Record<string, string> = { refunds: "Refunds & Returns" };
+    return labels[slug] ?? slug.charAt(0).toUpperCase() + slug.slice(1);
+  };
 
   return (
     <div>
@@ -42,13 +46,13 @@ export default function AdminPagesPage() {
         Site Pages
       </h1>
       <p className="text-gray-500 mb-6">
-        Edit content for About, Contact, Privacy, and Terms pages.
+        Edit content for About, Contact, Privacy, Terms, Shipping, and Refunds pages.
       </p>
 
       <div className="grid gap-4">
         {SLUGS.map((slug) => {
           const page = getPageBySlug(slug);
-          const label = slug.charAt(0).toUpperCase() + slug.slice(1);
+          const label = getLabel(slug);
           return (
             <div
               key={slug}

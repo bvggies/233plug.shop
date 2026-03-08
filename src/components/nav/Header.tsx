@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ShoppingCart, User, Search, Sparkles, Bell } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { CurrencySwitcher } from "@/components/currency/CurrencySwitcher";
 import { Logo } from "@/components/ui/Logo";
 import { useCartStore } from "@/store/cart-store";
 import { createClient } from "@/lib/supabase/client";
@@ -56,6 +57,7 @@ export function Header() {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/shop", label: "Shop" },
+    { href: "/dashboard", label: "Tracking" },
     { href: "/cart", label: "Cart" },
   ];
 
@@ -90,6 +92,7 @@ export function Header() {
           </nav>
 
           <div className="flex items-center gap-1 lg:gap-2">
+            <CurrencySwitcher className="hidden sm:block" />
             <ThemeToggle />
             <Link
               href="/shop"
@@ -218,6 +221,9 @@ export function Header() {
                     Request Item
                   </motion.span>
                 </Link>
+                <div className="px-2 pt-2 border-t border-neutral-100 dark:border-neutral-700">
+                  <CurrencySwitcher />
+                </div>
               </div>
             </motion.nav>
           )}

@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { Mail, Phone, MapPin, Send, MessageSquare } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { PageHero } from "@/components/ui/PageHero";
 import type { SitePage } from "@/types";
 
 export default function ContactPage() {
@@ -67,27 +69,17 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero */}
-      <section className="mx-4 md:mx-6 mb-10">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 py-16 md:py-20 px-6 shadow-lg"
-        >
-          <div className="relative z-10 max-w-4xl mx-auto text-center">
-            <div className="inline-flex p-3 bg-white/10 rounded-2xl mb-4">
-              <MessageSquare className="w-10 h-10 text-white" />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight mb-4">
-              {title}
-            </h1>
-            <p className="text-white/90 text-lg max-w-2xl mx-auto leading-relaxed">
-              {subtitle}
-            </p>
+      <PageHero
+        title={title}
+        subtitle={subtitle}
+        imageUrl="https://images.unsplash.com/photo-1423666639041-f56000c27a9a?w=1200&q=80"
+        icon={
+          <div className="inline-flex items-center gap-3 p-4 bg-white/20 rounded-2xl backdrop-blur-sm ring-2 ring-white/30">
+            <Image src="/logo.png" alt="233Plug" width={56} height={56} className="object-contain flex-shrink-0" priority />
+            <MessageSquare className="w-8 h-8 text-white flex-shrink-0" aria-hidden />
           </div>
-        </motion.div>
-      </section>
+        }
+      />
 
       <motion.section
         initial={{ opacity: 0, y: 20 }}
@@ -95,6 +87,19 @@ export default function ContactPage() {
         transition={{ delay: 0.15, duration: 0.4 }}
         className="max-w-5xl mx-auto px-4 pb-20 -mt-2"
       >
+        {/* Branded strip */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.35 }}
+          className="flex items-center justify-center gap-4 py-5 mb-2"
+        >
+          <div className="flex items-center gap-3 px-5 py-2.5 rounded-xl bg-white dark:bg-gray-800/80 shadow-soft border border-gray-100 dark:border-gray-700/50">
+            <Image src="/logo.png" alt="233Plug" width={40} height={40} className="object-contain" />
+            <span className="font-display font-semibold text-gray-900 dark:text-gray-100">We&apos;re here to help</span>
+          </div>
+        </motion.div>
+
         <div className="grid md:grid-cols-3 gap-6 md:gap-8">
           {/* Contact info cards */}
           {(contactEmail || contactPhone || contactAddress) && (

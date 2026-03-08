@@ -6,6 +6,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { CreditCard, Wallet, Tag, X, Shield, MapPin } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
+import { useDisplayPrice } from "@/hooks/useDisplayPrice";
+import { useCurrencyStore } from "@/store/currency-store";
 import { formatPrice } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -33,6 +35,14 @@ export default function CheckoutPage() {
   const [couponError, setCouponError] = useState("");
   const [applying, setApplying] = useState(false);
   const [shippingAddress, setShippingAddress] = useState("");
+  const [defaultAddress, setDefaultAddress] = useState<{
+    id: string;
+    label: string;
+    address: string;
+    city: string | null;
+    country: string;
+    phone: string | null;
+  } | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -41,17 +51,35 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("profiles")
-      .select("wallet_balance, address")
-      .eq("id", user.id)
-      .single()
-      .then(({ data }) => {
-        if (data) {
-          setWalletBalance(data.wallet_balance ?? 0);
-          setShippingAddress(data.address || "");
-        }
-      });
+    (async () => {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("wallet_balance, address")
+        .eq("id", user.id)
+        .single();
+      if (profile) {
+        setWalletBalance(profile.wallet_balance ?? 0);
+      }
+      const { data: addresses } = await supabase
+        .from("addresses")
+        .select("id, label, address, city, country, phone")
+        .eq("user_id", user.id)
+        .order("is_default", { ascending: false });
+      const defaultAddr = Array.isArray(addresses) && addresses.length > 0 ? addresses[0] : null;
+      if (defaultAddr) {
+        setDefaultAddress(defaultAddr as typeof defaultAddress);
+        const parts = [
+          (defaultAddr as { label?: string }).label,
+          (defaultAddr as { address: string }).address,
+          (defaultAddr as { city?: string | null }).city,
+          (defaultAddr as { country: string }).country,
+          (defaultAddr as { phone?: string | null }).phone,
+        ].filter(Boolean);
+        setShippingAddress(parts.join(", "));
+      } else if (profile?.address) {
+        setShippingAddress(profile.address);
+      }
+    })();
   }, [user, supabase]);
 
   const subtotal = totalPrice();
@@ -62,6 +90,12 @@ export default function CheckoutPage() {
     : 0;
   const total = Math.max(0, subtotal - discountAmount);
   const canUseWallet = walletBalance >= total;
+  const displaySubtotal = useDisplayPrice(subtotal, "GHS");
+  const displayDiscount = useDisplayPrice(discountAmount, "GHS");
+  const displayTotal = useDisplayPrice(total, "GHS");
+  const displayWallet = useDisplayPrice(walletBalance, "GHS");
+  const currency = useCurrencyStore((s) => s.currency);
+  const convert = useCurrencyStore((s) => s.convert);
 
   const applyCoupon = async () => {
     const code = couponCode.trim().toUpperCase();
@@ -91,7 +125,8 @@ export default function CheckoutPage() {
         return;
       }
       if (subtotal < c.min_order) {
-        setCouponError(`Minimum order of ${formatPrice(c.min_order, "GHS")} required`);
+        const minDisplay = currency === "GHS" ? c.min_order : convert(c.min_order, "GHS", currency);
+        setCouponError(`Minimum order of ${formatPrice(minDisplay, currency)} required`);
         return;
       }
       setAppliedCoupon(c);
@@ -174,7 +209,7 @@ export default function CheckoutPage() {
         });
         clearCart();
         toast.success("Order placed successfully!");
-        router.push("/dashboard");
+        router.push(`/dashboard/orders/${order.id}/receipt`);
         return;
       }
 
@@ -246,7 +281,12 @@ export default function CheckoutPage() {
               <MapPin className="w-5 h-5 text-neutral-500 dark:text-neutral-400 shrink-0 mt-0.5" />
               <div>
                 {shippingAddress ? (
-                  <p className="text-sm text-neutral-900 dark:text-neutral-100">{shippingAddress}</p>
+                  <>
+                    {defaultAddress?.label && (
+                      <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-0.5">{defaultAddress.label}</p>
+                    )}
+                    <p className="text-sm text-neutral-900 dark:text-neutral-100">{shippingAddress}</p>
+                  </>
                 ) : (
                   <p className="text-sm text-neutral-500 dark:text-neutral-400">No address saved. You can add one in your profile.</p>
                 )}
@@ -299,7 +339,7 @@ export default function CheckoutPage() {
               >
                 <Wallet className="w-6 h-6 text-neutral-700 dark:text-neutral-300" />
                 <span className="text-neutral-900 dark:text-neutral-100">
-                  Wallet ({formatPrice(walletBalance, "GHS")})
+                  Wallet ({displayWallet})
                   {!canUseWallet && " – Insufficient balance"}
                 </span>
               </button>
@@ -344,12 +384,12 @@ export default function CheckoutPage() {
           <div className="space-y-2 mb-6">
             <div className="flex justify-between text-neutral-600 dark:text-neutral-400">
               <span>Subtotal</span>
-              <span>{formatPrice(subtotal, "GHS")}</span>
+              <span>{displaySubtotal}</span>
             </div>
             {discountAmount > 0 && (
               <div className="flex justify-between text-primary-600 dark:text-primary-400">
                 <span>Discount</span>
-                <span>-{formatPrice(discountAmount, "GHS")}</span>
+                <span>-{displayDiscount}</span>
               </div>
             )}
             <motion.div
@@ -359,7 +399,7 @@ export default function CheckoutPage() {
               className="flex justify-between font-semibold text-xl pt-3 border-t border-neutral-100 dark:border-[var(--surface-border)]"
             >
               <span className="text-neutral-900 dark:text-neutral-100">Total</span>
-              <span className="text-primary-600 dark:text-primary-400">{formatPrice(total, "GHS")}</span>
+              <span className="text-primary-600 dark:text-primary-400">{displayTotal}</span>
             </motion.div>
           </div>
           <motion.button

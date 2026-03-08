@@ -4,15 +4,14 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home, ShoppingBag, FileText, ShoppingCart, User } from "lucide-react";
-import { useCartStore } from "@/store/cart-store";
+import { Home, ShoppingBag, FileText, Truck, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", icon: Home, label: "Home" },
   { href: "/shop", icon: ShoppingBag, label: "Shop" },
   { href: "/request", icon: FileText, label: "Requests" },
-  { href: "/cart", icon: ShoppingCart, label: "Cart", badge: true },
+  { href: "/dashboard", icon: Truck, label: "Tracking" },
   { href: "/dashboard/profile", icon: User, label: "Profile" },
 ];
 
@@ -20,7 +19,6 @@ export function GlassFABNav() {
   const pathname = usePathname();
   const [visible, setVisible] = useState(true);
   const [lastScroll, setLastScroll] = useState(0);
-  const totalItems = useCartStore((s) => s.totalItems());
 
   useEffect(() => {
     const handleScroll = () => {
@@ -66,21 +64,7 @@ export function GlassFABNav() {
                       : "text-neutral-500 dark:text-neutral-400 hover:bg-white/5 dark:hover:bg-white/5 hover:text-neutral-700 dark:hover:text-neutral-200"
                   )}
                 >
-                  {item.badge && totalItems > 0 ? (
-                    <motion.span
-                      key={totalItems}
-                      initial={{ scale: 0.5 }}
-                      animate={{ scale: 1 }}
-                      className="relative"
-                    >
-                      <Icon className="w-6 h-6" />
-                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center bg-accent-500 text-white text-xs font-bold rounded-full px-1 shadow-md">
-                        {totalItems > 99 ? "99+" : totalItems}
-                      </span>
-                    </motion.span>
-                  ) : (
-                    <Icon className="w-6 h-6" />
-                  )}
+                  <Icon className="w-6 h-6" />
                 </motion.span>
                 <span
                   className={cn(

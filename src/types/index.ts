@@ -90,6 +90,8 @@ export interface Category {
 export interface ProductVariant {
   id: string;
   product_id: string;
+  name: string | null;
+  image_url: string | null;
   size: string | null;
   color: string | null;
   sku: string | null;
@@ -123,6 +125,7 @@ export interface OrderItem {
   quantity: number;
   price: number;
   product?: Product;
+  variant?: ProductVariant;
 }
 
 export interface Order {
@@ -131,11 +134,14 @@ export interface Order {
   status: OrderStatus;
   total_price: number;
   currency: string;
+  discount_amount?: number;
   shipment_batch_id: string | null;
+  shipping_zone_id: string | null;
   created_at: string;
   updated_at: string;
   items?: OrderItem[];
   shipment_batch?: ShipmentBatch;
+  shipping_zone?: ShippingZone | null;
 }
 
 export interface Request {
@@ -147,6 +153,9 @@ export interface Request {
   budget: number | null;
   status: RequestStatus;
   quote_price: number | null;
+  quote_response: "accepted" | "declined" | "reduction_requested" | null;
+  quote_response_message: string | null;
+  counter_price: number | null;
   shipment_batch_id: string | null;
   created_at: string;
   updated_at: string;
@@ -159,8 +168,40 @@ export interface ShipmentBatch {
   status: ShipmentStatus;
   tracking_number: string | null;
   estimated_delivery: string | null;
+  shipping_zone_id: string | null;
   created_at: string;
   updated_at: string;
+  shipping_zone?: ShippingZone | null;
+}
+
+export interface ShippingZone {
+  id: string;
+  name: string;
+  description: string | null;
+  country: string;
+  estimated_days_min: number | null;
+  estimated_days_max: number | null;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type TrackingEventType =
+  | "created"
+  | "processing"
+  | "dispatched"
+  | "in_transit"
+  | "out_for_delivery"
+  | "delivered"
+  | "custom";
+
+export interface ShipmentTrackingEvent {
+  id: string;
+  shipment_batch_id: string;
+  event_type: TrackingEventType;
+  message: string | null;
+  created_at: string;
 }
 
 export interface CartItem {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +10,9 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/Skeleton";
-import type { Product, Category } from "@/types";
+import { formatPrice } from "@/lib/utils";
+import { Plus, Pencil, Trash2, Package } from "lucide-react";
+import type { Product, Category, ProductVariant } from "@/types";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -26,14 +29,28 @@ export default function EditProductPage() {
   const [loading, setLoading] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [imagesInput, setImagesInput] = useState("");
   const [isTrending, setIsTrending] = useState(false);
   const [isHotDeal, setIsHotDeal] = useState(false);
   const [loadingProduct, setLoadingProduct] = useState(true);
+  const [showVariantForm, setShowVariantForm] = useState(false);
+  const [editingVariantId, setEditingVariantId] = useState<string | null>(null);
+  const [variantSaving, setVariantSaving] = useState(false);
   const router = useRouter();
   const params = useParams();
   const id = params?.id as string;
   const supabase = createClient();
+
+  const [variantForm, setVariantForm] = useState({
+    name: "",
+    image_url: "",
+    size: "",
+    color: "",
+    sku: "",
+    price_adjustment: "0",
+    stock: "0",
+  });
 
   const {
     register,
@@ -56,14 +73,16 @@ export default function EditProductPage() {
     if (!id) return;
     async function load() {
       try {
-        const [prodRes, catRes] = await Promise.all([
+        const [prodRes, catRes, varRes] = await Promise.all([
           supabase.from("products").select("*").eq("id", id).single(),
           supabase.from("categories").select("*").order("name"),
+          supabase.from("product_variants").select("*").eq("product_id", id).order("id"),
         ]);
         if (prodRes.error) throw prodRes.error;
         const p = prodRes.data as Product;
         setProduct(p);
         setCategories((catRes.data as Category[]) || []);
+        setVariants((varRes.data as ProductVariant[]) ?? []);
         reset({
           name: p.name,
           description: p.description || "",
@@ -84,6 +103,82 @@ export default function EditProductPage() {
     }
     load();
   }, [id, supabase, reset, router]);
+
+  const loadVariants = async () => {
+    if (!id) return;
+    const { data } = await supabase.from("product_variants").select("*").eq("product_id", id).order("id");
+    setVariants((data as ProductVariant[]) ?? []);
+  };
+
+  const openAddVariant = () => {
+    setEditingVariantId(null);
+    setVariantForm({ name: "", image_url: "", size: "", color: "", sku: "", price_adjustment: "0", stock: "0" });
+    setShowVariantForm(true);
+  };
+
+  const openEditVariant = (v: ProductVariant) => {
+    setEditingVariantId(v.id);
+    setVariantForm({
+      name: v.name ?? "",
+      image_url: v.image_url ?? "",
+      size: v.size ?? "",
+      color: v.color ?? "",
+      sku: v.sku ?? "",
+      price_adjustment: String(v.price_adjustment ?? 0),
+      stock: String(v.stock ?? 0),
+    });
+    setShowVariantForm(true);
+  };
+
+  const saveVariant = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id) return;
+    setVariantSaving(true);
+    try {
+      const payload = {
+        product_id: id,
+        name: variantForm.name.trim() || null,
+        image_url: variantForm.image_url.trim() || null,
+        size: variantForm.size.trim() || null,
+        color: variantForm.color.trim() || null,
+        sku: variantForm.sku.trim() || null,
+        price_adjustment: parseFloat(variantForm.price_adjustment) || 0,
+        stock: parseInt(variantForm.stock, 10) || 0,
+      };
+      if (editingVariantId) {
+        const { error } = await supabase.from("product_variants").update(payload).eq("id", editingVariantId);
+        if (error) throw error;
+        toast.success("Variant updated");
+      } else {
+        const { error } = await supabase.from("product_variants").insert(payload);
+        if (error) throw error;
+        toast.success("Variant added");
+      }
+      setShowVariantForm(false);
+      setEditingVariantId(null);
+      loadVariants();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to save variant");
+    } finally {
+      setVariantSaving(false);
+    }
+  };
+
+  const deleteVariant = async (variantId: string) => {
+    if (!confirm("Delete this variant?")) return;
+    try {
+      const { error } = await supabase.from("product_variants").delete().eq("id", variantId);
+      if (error) throw error;
+      toast.success("Variant deleted");
+      loadVariants();
+      if (editingVariantId === variantId) {
+        setShowVariantForm(false);
+        setEditingVariantId(null);
+      }
+    } catch {
+      toast.error("Failed to delete variant");
+    }
+  };
 
   const onSubmit = async (data: FormData) => {
     if (!id) return;
@@ -286,6 +381,161 @@ export default function EditProductPage() {
           </Link>
         </div>
       </form>
+
+      {/* Variants (optional) */}
+      <div className="mt-10 bg-white rounded-2xl p-6 shadow-soft border border-gray-100 max-w-4xl">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-display font-semibold text-gray-900 flex items-center gap-2">
+            <Package className="w-5 h-5 text-primary-600" />
+            Variants (optional)
+          </h2>
+          {!showVariantForm && (
+            <button
+              type="button"
+              onClick={openAddVariant}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-xl text-sm font-medium hover:bg-primary-600 transition"
+            >
+              <Plus className="w-4 h-4" />
+              Add variant
+            </button>
+          )}
+        </div>
+        <p className="text-sm text-gray-500 mb-4">
+          Add variants if this product comes in different sizes, colors, or options. If there are no variants, customers buy the base product.
+        </p>
+
+        {showVariantForm && (
+          <form onSubmit={saveVariant} className="mb-6 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Name</label>
+                <input
+                  type="text"
+                  value={variantForm.name}
+                  onChange={(e) => setVariantForm((f) => ({ ...f, name: e.target.value }))}
+                  placeholder="e.g. Large / Blue"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Image URL</label>
+                <input
+                  type="url"
+                  value={variantForm.image_url}
+                  onChange={(e) => setVariantForm((f) => ({ ...f, image_url: e.target.value }))}
+                  placeholder="https://..."
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Size</label>
+                <input
+                  type="text"
+                  value={variantForm.size}
+                  onChange={(e) => setVariantForm((f) => ({ ...f, size: e.target.value }))}
+                  placeholder="e.g. M, 42"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Color</label>
+                <input
+                  type="text"
+                  value={variantForm.color}
+                  onChange={(e) => setVariantForm((f) => ({ ...f, color: e.target.value }))}
+                  placeholder="e.g. Black"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">SKU</label>
+                <input
+                  type="text"
+                  value={variantForm.sku}
+                  onChange={(e) => setVariantForm((f) => ({ ...f, sku: e.target.value }))}
+                  placeholder="e.g. SKU-001-M"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Price adjustment (GHS)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={variantForm.price_adjustment}
+                  onChange={(e) => setVariantForm((f) => ({ ...f, price_adjustment: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm"
+                />
+                <p className="text-xs text-gray-500 mt-0.5">Added to base price. Use 0 for same price.</p>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Stock</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={variantForm.stock}
+                  onChange={(e) => setVariantForm((f) => ({ ...f, stock: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-900 text-sm"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button type="submit" disabled={variantSaving} className="px-4 py-2 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600 disabled:opacity-50">
+                {variantSaving ? "Saving..." : editingVariantId ? "Update variant" : "Add variant"}
+              </button>
+              <button type="button" onClick={() => { setShowVariantForm(false); setEditingVariantId(null); }} className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+
+        {variants.length === 0 && !showVariantForm ? (
+          <p className="text-sm text-gray-500 py-4">No variants. Customers will buy this product at the base price and stock.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <th className="text-left py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">Image</th>
+                  <th className="text-left py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">Name</th>
+                  <th className="text-left py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">Size / Color</th>
+                  <th className="text-left py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">SKU</th>
+                  <th className="text-left py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">Price adj.</th>
+                  <th className="text-left py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">Stock</th>
+                  <th className="text-right py-3 px-2 font-semibold text-gray-600 dark:text-gray-400">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {variants.map((v) => (
+                  <tr key={v.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/30">
+                    <td className="py-3 px-2">
+                      {v.image_url ? (
+                        <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+                          <Image src={v.image_url} alt={v.name ?? ""} fill className="object-cover" sizes="48px" unoptimized={v.image_url.startsWith("http")} />
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
+                    </td>
+                    <td className="py-3 px-2 font-medium text-gray-900 dark:text-gray-100">{v.name || "—"}</td>
+                    <td className="py-3 px-2 text-gray-600 dark:text-gray-400">
+                      {[v.size, v.color].filter(Boolean).join(" / ") || "—"}
+                    </td>
+                    <td className="py-3 px-2 text-gray-600 dark:text-gray-400">{v.sku || "—"}</td>
+                    <td className="py-3 px-2">{formatPrice(v.price_adjustment, product?.currency ?? "GHS")}</td>
+                    <td className="py-3 px-2">{v.stock}</td>
+                    <td className="py-3 px-2 text-right">
+                      <button type="button" onClick={() => openEditVariant(v)} className="p-1.5 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-500/20 rounded-lg" aria-label="Edit"><Pencil className="w-4 h-4" /></button>
+                      <button type="button" onClick={() => deleteVariant(v.id)} className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-500/20 rounded-lg ml-1" aria-label="Delete"><Trash2 className="w-4 h-4" /></button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

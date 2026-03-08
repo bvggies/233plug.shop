@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -9,7 +10,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import Image from "next/image";
-import { Link2, DollarSign, FileText, ChevronRight, ChevronLeft, Sparkles, ImagePlus, X } from "lucide-react";
+import { Link2, DollarSign, FileText, ChevronRight, ChevronLeft, Sparkles, ImagePlus, X, ClipboardList, ArrowRight } from "lucide-react";
+import { formatDate } from "@/lib/utils";
 
 const schema = z.object({
   product_name: z.string().min(2, "Product name is required"),
@@ -33,8 +35,31 @@ export default function RequestPage() {
   const [dragOver, setDragOver] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [user, setUser] = useState<{ id: string } | null>(null);
+  const [recentRequests, setRecentRequests] = useState<{ id: string; product_name: string; status: string; created_at: string }[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(true);
   const router = useRouter();
   const supabase = createClient();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user: u } }) => {
+      setUser(u ?? null);
+      if (!u) {
+        setRequestsLoading(false);
+        return;
+      }
+      supabase
+        .from("requests")
+        .select("id, product_name, status, created_at")
+        .eq("user_id", u.id)
+        .order("created_at", { ascending: false })
+        .limit(5)
+        .then(({ data }) => {
+          setRecentRequests((data as { id: string; product_name: string; status: string; created_at: string }[]) ?? []);
+        })
+        .then(() => setRequestsLoading(false), () => setRequestsLoading(false));
+    });
+  }, [supabase]);
 
   const {
     register,
@@ -81,7 +106,7 @@ export default function RequestPage() {
       });
       if (error) throw error;
       toast.success("Request submitted! We'll get back to you soon.");
-      router.push("/dashboard");
+      router.push("/dashboard/requests");
       router.refresh();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to submit");
@@ -159,12 +184,23 @@ export default function RequestPage() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
-        <h1 className="section-title text-neutral-900 dark:text-neutral-100 mb-2">
-          Request to Buy
-        </h1>
-        <p className="text-description">
-          Can&apos;t find what you want? Tell us and we&apos;ll source it for you.
-        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <div>
+            <h1 className="section-title text-neutral-900 dark:text-neutral-100 mb-2">
+              Request to Buy
+            </h1>
+            <p className="text-description">
+              Can&apos;t find what you want? Tell us and we&apos;ll source it for you.
+            </p>
+          </div>
+          <Link
+            href={user ? "/dashboard/requests" : "/login?redirect=/dashboard/requests"}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-primary-500 text-primary-600 dark:text-primary-400 font-medium text-sm hover:bg-primary-500/10 dark:hover:bg-primary-500/20 transition shrink-0"
+          >
+            <ClipboardList className="w-5 h-5" />
+            {user ? "My requests" : "Sign in to view requests"}
+          </Link>
+        </div>
       </motion.div>
 
       {/* Progress bar */}
@@ -357,6 +393,63 @@ export default function RequestPage() {
           )}
         </AnimatePresence>
       </motion.form>
+
+      {/* Your recent requests - when signed in */}
+      {user && (
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="mt-10"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="section-title text-neutral-900 dark:text-neutral-100 text-lg">
+              Your recent requests
+            </h2>
+            <Link
+              href="/dashboard/requests"
+              className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline inline-flex items-center gap-1"
+            >
+              View all <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+          {requestsLoading ? (
+            <div className="surface-card rounded-2xl p-6 border border-neutral-200/80 dark:border-[var(--surface-border)]">
+              <div className="animate-pulse space-y-3">
+                <div className="h-12 bg-neutral-200 dark:bg-neutral-700 rounded-xl" />
+                <div className="h-12 bg-neutral-200 dark:bg-neutral-700 rounded-xl" />
+                <div className="h-12 bg-neutral-200 dark:bg-neutral-700 rounded-xl" />
+              </div>
+            </div>
+          ) : recentRequests.length === 0 ? (
+            <div className="surface-card rounded-2xl p-6 border border-neutral-200/80 dark:border-[var(--surface-border)] text-center">
+              <ClipboardList className="w-10 h-10 text-neutral-400 dark:text-neutral-500 mx-auto mb-2" />
+              <p className="text-neutral-600 dark:text-neutral-400 text-sm">No requests yet. Submit one above.</p>
+            </div>
+          ) : (
+            <div className="surface-card rounded-2xl border border-neutral-200/80 dark:border-[var(--surface-border)] overflow-hidden">
+              <ul className="divide-y divide-neutral-100 dark:divide-[var(--surface-border)]">
+                {recentRequests.map((r) => (
+                  <li key={r.id}>
+                    <Link
+                      href="/dashboard/requests"
+                      className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-neutral-50 dark:hover:bg-white/5 transition"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-neutral-900 dark:text-neutral-100 truncate">{r.product_name}</p>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{formatDate(r.created_at)}</p>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-medium capitalize bg-neutral-100 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 shrink-0">
+                        {r.status.replace("_", " ")}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </motion.section>
+      )}
     </div>
   );
 }

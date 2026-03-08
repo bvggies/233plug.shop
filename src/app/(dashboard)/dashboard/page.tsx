@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { formatPrice, formatDate, cn } from "@/lib/utils";
+import { formatDate, cn } from "@/lib/utils";
+import { DisplayPrice } from "@/hooks/useDisplayPrice";
 import { Skeleton } from "@/components/ui/Skeleton";
 import type { Order, OrderStatus } from "@/types";
+import { Truck, Receipt } from "lucide-react";
 
 const statusColors: Record<OrderStatus, string> = {
   pending: "bg-amber-100 text-amber-800",
@@ -94,21 +97,46 @@ export default function DashboardOrdersPage() {
                     className="border-b border-gray-100 last:border-0 hover:bg-gray-50/50"
                   >
                     <td className="px-6 py-4">
-                      <div className="text-sm font-mono text-gray-900">{order.id.slice(0, 8)}...</div>
-                      {batch && (
-                        <div className="mt-1">
-                          <div className="flex h-1.5 w-24 rounded-full bg-gray-200 overflow-hidden">
-                            <div className={cn("h-full rounded-full transition-all", progress >= 66 ? "bg-indigo-500" : "bg-amber-500")} style={{ width: `${progress}%` }} />
+                      <div className="flex flex-col gap-1">
+                        <Link
+                          href={`/dashboard/orders/${order.id}`}
+                          className="text-sm font-mono text-primary-600 dark:text-primary-400 hover:underline"
+                        >
+                          {order.id.slice(0, 8)}...
+                        </Link>
+                        {["paid", "shipped", "delivered"].includes(order.status) && (
+                          <Link
+                            href={`/dashboard/orders/${order.id}/receipt`}
+                            className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400"
+                          >
+                            <Receipt className="w-3.5 h-3.5" />
+                            View receipt
+                          </Link>
+                        )}
+                        {batch && (
+                          <Link
+                            href={`/dashboard/orders/${order.id}`}
+                            className="flex items-center gap-1.5 mt-1 text-xs text-neutral-500 dark:text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400"
+                          >
+                            <Truck className="w-3.5 h-3.5" />
+                            Track shipment
+                          </Link>
+                        )}
+                        {batch && (
+                          <div className="mt-1">
+                            <div className="flex h-1.5 w-24 rounded-full bg-neutral-200 dark:bg-[var(--surface-border)] overflow-hidden">
+                              <div className={cn("h-full rounded-full transition-all", progress >= 66 ? "bg-indigo-500" : "bg-amber-500")} style={{ width: `${progress}%` }} />
+                            </div>
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">{batch.batch_name} · {batch.status}</p>
                           </div>
-                          <p className="text-xs text-gray-500 mt-0.5">{batch.batch_name} · {batch.status}</p>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <StatusBadge status={order.status} />
                     </td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {formatPrice(order.total_price, order.currency)}
+                      <DisplayPrice amount={order.total_price} currency={order.currency} />
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {formatDate(order.created_at)}

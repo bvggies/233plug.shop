@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/Skeleton";
 import type { SitePage } from "@/types";
 
-const SLUGS = ["about", "contact", "privacy", "terms"];
+const SLUGS = ["about", "contact", "privacy", "terms", "shipping", "refunds"];
 
 export default function EditPagePage() {
   const params = useParams();
@@ -108,7 +108,9 @@ export default function EditPagePage() {
     );
   }
 
-  const label = slug ? slug.charAt(0).toUpperCase() + slug.slice(1) : "";
+  const label = slug
+    ? { refunds: "Refunds & Returns" }[slug] ?? slug.charAt(0).toUpperCase() + slug.slice(1)
+    : "";
 
   return (
     <div>

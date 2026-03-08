@@ -6,12 +6,18 @@ import { useCartStore } from "@/store/cart-store";
 
 function CallbackContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const clearCart = useCartStore((s) => s.clearCart);
 
   useEffect(() => {
     clearCart();
-    router.replace("/dashboard?success=1");
-  }, [clearCart, router]);
+    const orderId = searchParams.get("order");
+    if (orderId) {
+      router.replace(`/dashboard/orders/${orderId}/receipt`);
+    } else {
+      router.replace("/dashboard?success=1");
+    }
+  }, [clearCart, router, searchParams]);
 
   return (
     <div className="min-h-[50vh] flex items-center justify-center">

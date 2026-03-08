@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { ContentRenderer } from "@/components/content/ContentRenderer";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { PageHero } from "@/components/ui/PageHero";
 import { Sparkles, Truck, Shield, Heart, ArrowRight } from "lucide-react";
 import type { SitePage } from "@/types";
 
@@ -89,24 +91,16 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero */}
-      <section className="mx-4 md:mx-6 mb-10">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 py-16 md:py-20 px-6 shadow-lg"
-        >
-          <div className="relative z-10 max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight mb-4">
-              {title}
-            </h1>
-            <p className="text-white/90 text-lg max-w-2xl mx-auto leading-relaxed">
-              {description}
-            </p>
+      <PageHero
+        title={title}
+        subtitle={description}
+        imageUrl="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200&q=80"
+        icon={
+          <div className="inline-flex p-4 bg-white/20 rounded-2xl backdrop-blur-sm ring-2 ring-white/30">
+            <Image src="/logo.png" alt="233Plug" width={72} height={72} className="object-contain" priority />
           </div>
-        </motion.div>
-      </section>
+        }
+      />
 
       {/* Content */}
       <motion.section
@@ -115,7 +109,23 @@ export default function AboutPage() {
         transition={{ delay: 0.15, duration: 0.4 }}
         className="max-w-4xl mx-auto px-4 pb-20 -mt-2"
       >
-        <div className="surface-card p-8 md:p-12">
+        <div className="surface-card p-8 md:p-12 overflow-hidden">
+          {/* Branded header with logo */}
+          <motion.div
+            initial={{ opacity: 0, x: -12 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2, duration: 0.35 }}
+            className="flex flex-col sm:flex-row items-center gap-6 pb-8 mb-8 border-b border-gray-100 dark:border-gray-700/50"
+          >
+            <div className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br from-primary-500/10 to-primary-600/10 dark:from-primary-500/20 dark:to-primary-600/20 p-3 flex items-center justify-center ring-2 ring-primary-500/20">
+              <Image src="/logo.png" alt="233Plug" width={80} height={80} className="object-contain w-full h-full" />
+            </div>
+            <div className="text-center sm:text-left">
+              <h2 className="text-2xl font-display font-bold text-gray-900 dark:text-gray-100">233Plug</h2>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">Your trusted partner for premium products, from Ghana to your door.</p>
+            </div>
+          </motion.div>
+
           {hasContent ? (
             <ContentRenderer content={page!.content!} />
           ) : (

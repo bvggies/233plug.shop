@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronDown, HelpCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { PageHero } from "@/components/ui/PageHero";
 import type { FAQ } from "@/types";
 
 export default function FAQPage() {
@@ -42,27 +43,12 @@ export default function FAQPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero */}
-      <section className="mx-4 md:mx-6 mb-10">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 py-16 md:py-20 px-6 shadow-lg"
-        >
-          <div className="relative z-10 max-w-4xl mx-auto text-center">
-            <div className="inline-flex p-3 bg-white/10 rounded-2xl mb-4">
-              <HelpCircle className="w-10 h-10 text-white" />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight mb-4">
-              Frequently Asked Questions
-            </h1>
-            <p className="text-white/90 text-lg max-w-2xl mx-auto leading-relaxed">
-              Find answers to common questions about 233Plug.
-            </p>
-          </div>
-        </motion.div>
-      </section>
+      <PageHero
+        title="Frequently Asked Questions"
+        subtitle="Find answers to common questions about 233Plug."
+        imageUrl="https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1200&q=80"
+        icon={<HelpCircle className="w-10 h-10 text-white" />}
+      />
 
       <motion.section
         initial={{ opacity: 0, y: 20 }}

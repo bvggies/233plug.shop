@@ -6,7 +6,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight, ShoppingCart } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { formatPrice } from "@/lib/utils";
+import { useDisplayPrice, DisplayPrice } from "@/hooks/useDisplayPrice";
 import { useCartStore } from "@/store/cart-store";
 import { toast } from "sonner";
 import type { Product } from "@/types";
@@ -31,6 +31,7 @@ function ProductTile({
   showAddToCart?: boolean;
 }) {
   const addItem = useCartStore((s) => s.addItem);
+  const displayPrice = useDisplayPrice(product.price, product.currency);
   const image = product.images?.[0];
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -87,7 +88,7 @@ function ProductTile({
             {product.name}
           </h3>
           <p className={`text-primary-600 dark:text-primary-400 font-semibold ${isCompact ? "text-xs md:text-sm mt-0.5" : "text-sm mt-1"}`}>
-            {formatPrice(product.price, product.currency)}
+            {displayPrice}
           </p>
         </div>
       </motion.div>
@@ -279,7 +280,7 @@ export function CategorySection({ name, slug, layout, accent }: CategorySectionP
                       {p.name}
                     </h3>
                     <p className={`text-primary-600 font-semibold mt-0.5 ${i === 0 ? "text-sm md:text-base" : "text-xs md:text-sm"}`}>
-                      {formatPrice(p.price, p.currency)}
+                      <DisplayPrice amount={p.price} currency={p.currency} />
                     </p>
                   </div>
                 </motion.div>
