@@ -27,7 +27,12 @@ type Order = { id: string; user_id: string; total_price: number; status: string;
 type Request = { id: string; user_id: string; product_name: string; status: string; shipment_batch_id: string | null };
 
 const statusColors: Record<string, string> = {
+  pending_shipment: "bg-amber-100 text-amber-800",
   pending: "bg-amber-100 text-amber-800",
+  left_origin: "bg-sky-100 text-sky-800",
+  at_sea: "bg-cyan-100 text-cyan-800",
+  in_flight: "bg-violet-100 text-violet-800",
+  arrived_destination: "bg-teal-100 text-teal-800",
   shipped: "bg-blue-100 text-blue-800",
   delivered: "bg-green-100 text-green-800",
 };
@@ -91,7 +96,7 @@ export default function AdminShipmentsPage() {
     setShipmentDate(new Date().toISOString().slice(0, 10));
     setTracking("");
     setEstDelivery("");
-    setStatus("pending");
+    setStatus("pending_shipment");
     setBatchZoneId("");
   };
 
@@ -102,7 +107,7 @@ export default function AdminShipmentsPage() {
     setShipmentDate(b.shipment_date);
     setTracking(b.tracking_number ?? "");
     setEstDelivery(b.estimated_delivery ?? "");
-    setStatus(b.status);
+    setStatus(b.status === "pending" ? "pending_shipment" : b.status);
     setBatchZoneId(b.shipping_zone_id ?? "");
     setNewEventType("processing");
     setNewEventMessage("");
@@ -279,11 +284,18 @@ export default function AdminShipmentsPage() {
     try {
       await supabase.from("orders").update({ shipment_batch_id: null }).eq("shipment_batch_id", selected.id);
       await supabase.from("requests").update({ shipment_batch_id: null }).eq("shipment_batch_id", selected.id);
+      const batchStatus = selected.status;
       if (assignOrderIds.length) {
         await supabase.from("orders").update({ shipment_batch_id: selected.id }).in("id", assignOrderIds);
+        if (batchStatus === "shipped" || batchStatus === "delivered") {
+          await supabase.from("orders").update({ status: batchStatus }).in("id", assignOrderIds);
+        }
       }
       if (assignRequestIds.length) {
         await supabase.from("requests").update({ shipment_batch_id: selected.id }).in("id", assignRequestIds);
+        if (batchStatus === "shipped" || batchStatus === "delivered") {
+          await supabase.from("requests").update({ status: batchStatus }).in("id", assignRequestIds);
+        }
       }
       toast.success("Assignments saved");
       setModal(null);
@@ -322,8 +334,12 @@ export default function AdminShipmentsPage() {
         if (error) throw error;
         const orderIds = orders.filter((o) => o.shipment_batch_id === batchId).map((o) => o.id);
         const requestIds = requests.filter((r) => r.shipment_batch_id === batchId).map((r) => r.id);
-        if (orderIds.length) await supabase.from("orders").update({ status: bulkBatchStatus }).in("id", orderIds);
-        if (requestIds.length) await supabase.from("requests").update({ status: bulkBatchStatus }).in("id", requestIds);
+        if (orderIds.length && (bulkBatchStatus === "shipped" || bulkBatchStatus === "delivered")) {
+          await supabase.from("orders").update({ status: bulkBatchStatus }).in("id", orderIds);
+        }
+        if (requestIds.length && (bulkBatchStatus === "shipped" || bulkBatchStatus === "delivered")) {
+          await supabase.from("requests").update({ status: bulkBatchStatus }).in("id", requestIds);
+        }
         await supabase.from("shipment_tracking_events").insert({
           shipment_batch_id: batchId,
           event_type: bulkBatchStatus === "delivered" ? "delivered" : "shipped",
@@ -372,7 +388,11 @@ export default function AdminShipmentsPage() {
             onChange={(e) => setBulkBatchStatus(e.target.value)}
             className="px-3 py-2 rounded-lg border border-primary-200 bg-white text-gray-900 text-sm"
           >
-            <option value="pending">Pending</option>
+            <option value="pending_shipment">Pending shipment</option>
+            <option value="left_origin">Left country of origin</option>
+            <option value="at_sea">At sea</option>
+            <option value="in_flight">In flight</option>
+            <option value="arrived_destination">Arrived at destination</option>
             <option value="shipped">Shipped</option>
             <option value="delivered">Delivered</option>
           </select>
@@ -495,7 +515,11 @@ export default function AdminShipmentsPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
                 <select value={status} onChange={(e) => setStatus(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-gray-200">
-                  <option value="pending">Pending</option>
+                  <option value="pending_shipment">Pending shipment</option>
+                  <option value="left_origin">Left country of origin</option>
+                  <option value="at_sea">At sea</option>
+                  <option value="in_flight">In flight</option>
+                  <option value="arrived_destination">Arrived at destination</option>
                   <option value="shipped">Shipped</option>
                   <option value="delivered">Delivered</option>
                 </select>
@@ -556,21 +580,25 @@ export default function AdminShipmentsPage() {
                     >
                       <option value="processing">Processing</option>
                       <option value="dispatched">Dispatched</option>
+                      <option value="left_origin">Left country of origin</option>
+                      <option value="at_sea">At sea</option>
+                      <option value="in_flight">In flight</option>
+                      <option value="arrived_destination">Arrived at destination</option>
                       <option value="in_transit">In transit</option>
                       <option value="out_for_delivery">Out for delivery</option>
                       <option value="delivered">Delivered</option>
-                      <option value="custom">Custom</option>
+                      <option value="custom">Custom (add description below)</option>
                     </select>
                     <input
                       value={newEventMessage}
                       onChange={(e) => setNewEventMessage(e.target.value)}
-                      placeholder="Optional message"
+                      placeholder={newEventType === "custom" ? "Describe the update (required)" : "Optional message"}
                       className="flex-1 px-3 py-2 rounded-lg border border-gray-200 text-sm"
                     />
                     <button
                       type="button"
                       onClick={addTrackingEvent}
-                      disabled={addingEvent}
+                      disabled={addingEvent || (newEventType === "custom" && !newEventMessage.trim())}
                       className="px-3 py-2 bg-primary-500 text-white rounded-lg text-sm font-medium hover:bg-primary-600 disabled:opacity-50"
                     >
                       {addingEvent ? "…" : "Add"}

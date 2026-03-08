@@ -21,6 +21,10 @@ const EVENT_CONFIG: Record<
   processing: { label: "Processing", icon: Package, color: "text-amber-700 bg-amber-100 dark:bg-amber-900/40 dark:text-amber-400" },
   dispatched: { label: "Dispatched", icon: Truck, color: "text-blue-700 bg-blue-100 dark:bg-blue-900/40 dark:text-blue-400" },
   in_transit: { label: "In transit", icon: Truck, color: "text-indigo-700 bg-indigo-100 dark:bg-indigo-900/40 dark:text-indigo-400" },
+  left_origin: { label: "Left country of origin", icon: Truck, color: "text-sky-700 bg-sky-100 dark:bg-sky-900/40 dark:text-sky-400" },
+  at_sea: { label: "At sea", icon: Truck, color: "text-cyan-700 bg-cyan-100 dark:bg-cyan-900/40 dark:text-cyan-400" },
+  in_flight: { label: "In flight", icon: Truck, color: "text-violet-700 bg-violet-100 dark:bg-violet-900/40 dark:text-violet-400" },
+  arrived_destination: { label: "Arrived at destination", icon: MapPin, color: "text-teal-700 bg-teal-100 dark:bg-teal-900/40 dark:text-teal-400" },
   out_for_delivery: { label: "Out for delivery", icon: MapPin, color: "text-purple-700 bg-purple-100 dark:bg-purple-900/40 dark:text-purple-400" },
   delivered: { label: "Delivered", icon: CheckCircle2, color: "text-emerald-700 bg-emerald-100 dark:bg-emerald-900/40 dark:text-emerald-400" },
   custom: { label: "Update", icon: MessageSquare, color: "text-primary-700 bg-primary-100 dark:bg-primary-900/40 dark:text-primary-400" },
@@ -72,6 +76,7 @@ export function TrackingTimeline({ batch, events, showBatchInfo = true }: Tracki
               const config = EVENT_CONFIG[event.event_type] ?? EVENT_CONFIG.custom;
               const Icon = config.icon;
               const isLast = i === sortedEvents.length - 1;
+              const displayLabel = event.event_type === "custom" && event.message ? event.message : config.label;
               return (
                 <motion.li
                   key={event.id}
@@ -87,12 +92,12 @@ export function TrackingTimeline({ batch, events, showBatchInfo = true }: Tracki
                   </div>
                   <div className="pt-0.5">
                     <p className="font-medium text-neutral-900 dark:text-neutral-100 capitalize">
-                      {config.label}
+                      {displayLabel}
                     </p>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
                       {formatDate(event.created_at)}
                     </p>
-                    {event.message && (
+                    {event.message && event.event_type !== "custom" && (
                       <p className="text-sm text-neutral-600 dark:text-neutral-300 mt-1">
                         {event.message}
                       </p>

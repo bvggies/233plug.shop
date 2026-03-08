@@ -90,7 +90,7 @@ export default function DashboardOrdersPage() {
               <tbody>
                 {orders.map((order) => {
                   const batch = (order as Order & { shipment_batches?: { batch_name: string; status: string; tracking_number: string | null; estimated_delivery: string | null } | null } | null)?.shipment_batches ?? null;
-                  const progress = batch ? (batch.status === "delivered" ? 100 : batch.status === "shipped" ? 66 : batch.status === "pending" ? 33 : 33) : 0;
+                  const progress = batch ? (batch.status === "delivered" ? 100 : batch.status === "shipped" || batch.status === "arrived_destination" ? 85 : batch.status === "in_flight" || batch.status === "at_sea" ? 60 : batch.status === "left_origin" ? 45 : batch.status === "pending_shipment" || batch.status === "pending" ? 33 : 50) : 0;
                   return (
                   <tr
                     key={order.id}

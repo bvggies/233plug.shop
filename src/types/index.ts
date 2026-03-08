@@ -18,7 +18,14 @@ export type RequestStatus =
   | "shipped"
   | "delivered";
 
-export type ShipmentStatus = "pending" | "shipped" | "delivered";
+export type ShipmentStatus =
+  | "pending_shipment"
+  | "left_origin"
+  | "at_sea"
+  | "in_flight"
+  | "arrived_destination"
+  | "shipped"
+  | "delivered";
 
 export type PaymentMethod = "paystack" | "stripe" | "wallet";
 
@@ -197,6 +204,10 @@ export type TrackingEventType =
   | "dispatched"
   | "in_transit"
   | "out_for_delivery"
+  | "left_origin"
+  | "at_sea"
+  | "in_flight"
+  | "arrived_destination"
   | "delivered"
   | "custom";
 
