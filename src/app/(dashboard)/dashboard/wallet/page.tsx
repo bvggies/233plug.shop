@@ -168,11 +168,9 @@ export default function DashboardWalletPage() {
                   <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{t.label}</p>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs text-gray-500 dark:text-gray-400">{formatDate(t.date)}</span>
-                    {t.source !== "all" && (
-                      <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                        {SOURCE_LABELS[t.source]}
-                      </span>
-                    )}
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                      {SOURCE_LABELS[t.source]}
+                    </span>
                     {t.orderId && (
                       <Link
                         href={`/dashboard/orders/${t.orderId}/receipt`}
